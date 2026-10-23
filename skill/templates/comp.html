@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<link rel="icon" href="data:,">
+<title>codefilm · demo composition</title>
+<style>
+  :root{
+    --paper:#F2ECE1; --ink:#1B1A17; --muted:#8A8275;
+    --accent:#D9552B; --green:#2F7D5B; --line:#D8CFC0; --card:#FFFDF8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--paper);color:var(--ink)}
+  body{font-family:"Segoe UI",system-ui,-apple-system,sans-serif}
+  #stage{position:absolute;inset:0;overflow:hidden;background:
+    radial-gradient(1200px 700px at 20% 0%, #F8F3E9 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 100%, #EDE3D3 0%, transparent 55%), var(--paper);}
+  .scene{position:absolute;inset:0}
+  .grain{position:absolute;inset:0;opacity:.035;pointer-events:none;
+    background-image:radial-gradient(#000 1px, transparent 1px);background-size:4px 4px}
+  .line{position:absolute;left:0;width:100%;text-align:center;font-family:Georgia,"Times New Roman",serif;
+    font-weight:700;font-size:168px;line-height:.98;letter-spacing:-.035em;color:var(--ink);
+    transform-origin:50% 50%;will-change:transform,opacity,filter}
+  .line.accent{color:var(--accent)}
+  .line:nth-child(1){top:210px}
+  .line:nth-child(2){top:402px}
+  .line:nth-child(3){top:594px}
+  #card{position:absolute;left:560px;top:250px;width:800px;height:540px;background:var(--card);
+    border:2px solid var(--ink);box-shadow:16px 16px 0 rgba(27,26,23,.13);padding:44px 48px;
+    transform-origin:50% 50%;will-change:transform,opacity,filter}
+  #card h1{margin:0;font-family:Georgia,serif;font-size:46px;letter-spacing:-.02em}
+  #card .sub{margin-top:8px;color:var(--muted);font-size:21px;letter-spacing:.01em}
+  .rows{margin-top:34px;display:flex;flex-direction:column;gap:22px}
+  .row{display:flex;align-items:center;gap:18px;font-size:25px}
+  .box{width:32px;height:32px;border:2px solid var(--ink);display:flex;align-items:center;
+    justify-content:center;font-size:21px;font-weight:700;color:var(--green);
+    transform-origin:50% 50%;will-change:transform,opacity}
+  .meta{margin-top:34px;display:flex;align-items:flex-end;justify-content:space-between}
+  .track{width:520px;height:16px;background:#E8DFD0;border:2px solid var(--ink);padding:2px}
+  .fill{display:block;width:100%;height:100%;background:var(--accent);transform-origin:0 50%;
+    transform:scaleX(0)}
+  #counter{font-family:Georgia,serif;font-size:96px;line-height:1;letter-spacing:-.04em}
+  #counter small{font-size:22px;color:var(--muted);letter-spacing:.08em;margin-left:10px}
+  #s3title{position:absolute;left:0;width:100%;top:150px;text-align:center;font-family:Georgia,serif;
+    font-size:74px;letter-spacing:-.02em;color:var(--ink);will-change:transform,opacity}
+  #s3sub{position:absolute;left:0;width:100%;top:250px;text-align:center;font-size:22px;
+    letter-spacing:.18em;color:var(--muted);text-transform:uppercase;will-change:opacity}
+  .bars{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);display:flex;
+    align-items:flex-end;gap:74px;height:430px}
+  .barwrap{width:150px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;
+    align-items:center;gap:16px}
+  .bar{width:100%;height:380px;background:var(--green);border:2px solid var(--ink);
+    transform-origin:50% 100%;transform:scaleY(0);will-change:transform}
+  .bar.a{background:var(--accent)}
+  .bar.b{background:#E7B84B}
+  .bar.c{background:var(--green)}
+  .bar.d{background:#4C6FA8}
+  .barwrap label{font-size:22px;letter-spacing:.08em;color:var(--muted);opacity:0}
+  #endmark{position:absolute;left:0;width:100%;top:360px;text-align:center;font-family:Georgia,serif;
+    font-size:214px;letter-spacing:-.045em;color:var(--ink);will-change:transform,opacity}
+  #tagline{position:absolute;left:0;width:100%;top:650px;text-align:center;font-size:38px;
+    letter-spacing:.04em;color:var(--muted);will-change:opacity}
+  #dot{position:absolute;left:934px;top:760px;width:52px;height:52px;border-radius:50%;
+    background:var(--accent);transform:scale(0);transform-origin:50% 50%}
+  #frame{position:absolute;inset:54px;border:2px solid rgba(27,26,23,.18);pointer-events:none}
+  #slug{position:absolute;right:78px;bottom:64px;font-size:19px;letter-spacing:.16em;
+    color:var(--muted);text-transform:uppercase}
+  #time{position:absolute;left:78px;bottom:64px;font-size:19px;letter-spacing:.12em;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="grain"></div>
+  <div id="frame"></div>
+
+  <div class="scene" id="s1">
+    <div class="line" data-text="A VIDEO">A VIDEO</div>
+    <div class="line" data-text="IS JUST">IS JUST</div>
+    <div class="line accent" data-text="A FUNCTION">A FUNCTION</div>
+  </div>
+
+  <div class="scene" id="s2">
+    <div id="card">
+      <h1 data-text="THE PIPELINE">THE PIPELINE</h1>
+      <div class="sub" data-text="reference in · code out · frame-checked">reference in · code out · frame-checked</div>
+      <div class="rows">
+        <div class="row"><span class="box" id="check0">✓</span><span data-text="measure the reference">measure the reference</span></div>
+        <div class="row"><span class="box" id="check1">✓</span><span data-text="rebuild it as code">rebuild it as code</span></div>
+        <div class="row"><span class="box" id="check2">✓</span><span data-text="compare every frame">compare every frame</span></div>
+      </div>
+      <div class="meta">
+        <div class="track"><i class="fill" id="fill"></i></div>
+        <div id="counter"><span id="cnum">00</span><small>FRAMES</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene" id="s3">
+    <div id="s3title" data-text="MEASURED, NOT GUESSED">MEASURED, NOT GUESSED</div>
+    <div id="s3sub" data-text="STILLNESS · CUTS · MOTION · PALETTE">STILLNESS · CUTS · MOTION · PALETTE</div>
+    <div class="bars">
+      <div class="barwrap"><div class="bar a" id="bar0"></div><label data-text="STILL">STILL</label></div>
+      <div class="barwrap"><div class="bar b" id="bar1"></div><label data-text="CUTS">CUTS</label></div>
+      <div class="barwrap"><div class="bar c" id="bar2"></div><label data-text="MOTION">MOTION</label></div>
+      <div class="barwrap"><div class="bar d" id="bar3"></div><label data-text="PALETTE">PALETTE</label></div>
+    </div>
+  </div>
+
+  <div class="scene" id="s4">
+    <div id="endmark" data-text="codefilm">codefilm</div>
+    <div id="tagline" data-text="reference in · code out · frame-checked">reference in · code out · frame-checked</div>
+    <div id="dot"></div>
+  </div>
+
+  <div id="time"></div>
+  <div id="slug">codefilm · demo</div>
+</div>
+
+<script>
+(() => {
+  const DUR = 8.0;
+  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false};
+
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = p => { p = clamp(p); return p * p * (3 - 2 * p); };
+  const easeOut = p => 1 - Math.pow(1 - clamp(p), 3);
+  const lerp = (a, b, p) => a + (b - a) * p;
+
+  function place(el, x, y, s = 1, op = 1, blur = 0) {
+    el.style.transform = `translate(${x.toFixed(2)}px,${y.toFixed(2)}px) scale(${s.toFixed(4)})`;
+    el.style.opacity = op.toFixed(3);
+    el.style.filter = blur > 0.05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+  }
+
+  const lines = [...document.querySelectorAll('#s1 .line')];
+  const checks = [0, 1, 2].map(i => $('check' + i));
+  const bars = [0, 1, 2, 3].map(i => $('bar' + i));
+  const barVals = [0.42, 0.68, 0.55, 0.90];
+
+  function render(t) {
+    // scene 1 — three lines arrive, then leave
+    const inT = [0.10, 0.26, 0.42];
+    lines.forEach((el, i) => {
+      const p = easeOut((t - inT[i]) / 0.55);
+      const out = smooth((t - 1.55) / 0.35);
+      const y = (1 - p) * 82 - out * 54;
+      place(el, 0, y, 1, p * (1 - out), out * 7);
+    });
+
+    // scene 2 — card with checks, progress and counter
+    const cardIn = easeOut((t - 2.00) / 0.50);
+    const cardOut = smooth((t - 4.25) / 0.35);
+    const cardVis = cardIn * (1 - cardOut);
+    place($('card'), 0, (1 - cardIn) * 64 - cardOut * 44,
+          0.955 + 0.045 * cardIn, cardVis, cardOut * 7);
+    checks.forEach((el, i) => {
+      const p = easeOut((t - (2.35 + i * 0.38)) / 0.32) * (1 - cardOut);
+      el.style.opacity = p.toFixed(3);
+      el.style.transform = `scale(${(0.55 + 0.45 * p).toFixed(3)})`;
+    });
+    const prog = clamp((t - 2.30) / 1.80);
+    $('fill').style.transform = `scaleX(${prog.toFixed(4)})`;
+    $('cnum').textContent = String(Math.round(24 * prog)).padStart(2, '0');
+
+    // scene 3 — bars grow
+    const s3in = easeOut((t - 4.70) / 0.40);
+    const s3out = smooth((t - 6.30) / 0.30);
+    place($('s3title'), 0, (1 - s3in) * 30, 1, s3in * (1 - s3out), s3out * 6);
+    $('s3sub').style.opacity = (s3in * (1 - s3out)).toFixed(3);
+    bars.forEach((el, i) => {
+      const p = easeOut((t - (4.95 + i * 0.16)) / 0.55) * (1 - s3out);
+      el.style.transform = `scaleY(${(barVals[i] * p).toFixed(4)})`;
+    });
+    const s3vis = s3in * (1 - s3out);
+    document.querySelectorAll('#s3 .barwrap label').forEach(el => {
+      el.style.opacity = s3vis.toFixed(3);
+    });
+
+    // scene 4 — end card holds
+    const eIn = easeOut((t - 6.55) / 0.60);
+    place($('endmark'), 0, (1 - eIn) * 46, 0.94 + 0.06 * eIn, eIn, 0);
+    $('tagline').style.opacity = easeOut((t - 6.95) / 0.50).toFixed(3);
+    const d = easeOut((t - 7.20) / 0.30);
+    $('dot').style.transform = `scale(${d.toFixed(4)})`;
+
+    $('time').textContent = `t = ${t.toFixed(2)}s`;
+  }
+
+  function texts(t) {
+    const out = [];
+    document.querySelectorAll('[data-text]').forEach(el => {
+      const cs = getComputedStyle(el);
+      const op = parseFloat(cs.opacity || '1');
+      const r = el.getBoundingClientRect();
+      if (op > 0.05 && r.width > 1 && r.height > 1) {
+        out.push({id: el.id || el.dataset.text, text: el.dataset.text,
+                  x0: r.left, y0: r.top, x1: r.right, y1: r.bottom});
+      }
+    });
+    return out;
+  }
+
+  window.__seek = async (t) => { render(clamp(t, 0, DUR)); return true; };
+  window.render = (t) => render(clamp(t, 0, DUR));
+  window.TEXTS = () => texts();
+  window.__motion = (t0, t1) => {
+    // rough farthest travel in CSS px between two times; used only for shutter sizing
+    const active = (t0 < 2.2 || (t0 > 2.0 && t0 < 4.7) || (t0 > 4.7 && t0 < 6.6) || (t0 > 6.5 && t0 < 7.6));
+    return active ? 420 : 0;
+  };
+
+  window.__ready = Promise.resolve().then(() => {
+    render(0);
+    document.documentElement.dataset.ready = '1';
+    return true;
+  });
+
+  const q = new URLSearchParams(location.search);
+  const external = q.has('external');
+  if (q.has('t')) window.__ready.then(() => render(parseFloat(q.get('t'))));
+  else if (q.has('play') || !external) window.__ready.then(() => {
+    const loop = (ts) => { render((ts / 1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+})();
+</script>
+</body>
+</html>

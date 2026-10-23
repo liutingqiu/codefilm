@@ -1,0 +1,88 @@
+{
+ "rows": [
+  {
+   "t": 0.0,
+   "diff": 1.49,
+   "pair": "pair_t000.000.png"
+  },
+  {
+   "t": 0.25,
+   "diff": 11.03,
+   "pair": "pair_t000.250.png"
+  },
+  {
+   "t": 0.5,
+   "diff": 11.44,
+   "pair": "pair_t000.500.png"
+  },
+  {
+   "t": 0.75,
+   "diff": 4.13,
+   "pair": "pair_t000.750.png"
+  },
+  {
+   "t": 1.0,
+   "diff": 13.25,
+   "pair": "pair_t001.000.png"
+  },
+  {
+   "t": 1.25,
+   "diff": 18.0,
+   "pair": "pair_t001.250.png"
+  },
+  {
+   "t": 1.5,
+   "diff": 17.17,
+   "pair": "pair_t001.500.png"
+  },
+  {
+   "t": 1.75,
+   "diff": 16.64,
+   "pair": "pair_t001.750.png"
+  },
+  {
+   "t": 2.0,
+   "diff": 51.05,
+   "pair": "pair_t002.000.png"
+  },
+  {
+   "t": 2.25,
+   "diff": 50.09,
+   "pair": "pair_t002.250.png"
+  },
+  {
+   "t": 2.5,
+   "diff": 14.93,
+   "pair": "pair_t002.500.png"
+  }
+ ],
+ "worst": [
+  {
+   "t": 2.0,
+   "diff": 51.05,
+   "pair": "pair_t002.000.png"
+  },
+  {
+   "t": 2.25,
+   "diff": 50.09,
+   "pair": "pair_t002.250.png"
+  },
+  {
+   "t": 1.25,
+   "diff": 18.0,
+   "pair": "pair_t001.250.png"
+  },
+  {
+   "t": 1.5,
+   "diff": 17.17,
+   "pair": "pair_t001.500.png"
+  },
+  {
+   "t": 1.75,
+   "diff": 16.64,
+   "pair": "pair_t001.750.png"
+  }
+ ],
+ "source": "..\\repos\\motion2code\\gallery\\think-big\\source.mp4",
+ "render": "examples\\think-big\\out.mp4"
+}

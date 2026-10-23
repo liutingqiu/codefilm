@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>拾光 · codefilm — 把想法，变成下一步</title>
+<meta name="description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23D9552B' stroke-width='6'/%3E%3Cline x1='32' y1='2' x2='32' y2='62' stroke='%23D9552B' stroke-width='6'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --paper:#F2ECE1; --paper2:#FBF7EE; --ink:#1B1A17; --muted:#7F7768;
+    --accent:#D9552B; --green:#2F7D5B; --line:#D8CFC0; --card:#FFFDF8;
+    --shadow:0 24px 60px -24px rgba(27,26,23,.28);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:radial-gradient(1200px 700px at 18% 0%, rgba(255,255,255,.55) 0%, transparent 60%),
+               radial-gradient(900px 600px at 100% 10%, rgba(217,85,43,.06) 0%, transparent 55%);}
+  .wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 32px}
+  a{color:inherit;text-decoration:none}
+  header{display:flex;align-items:center;justify-content:space-between;padding:28px 0}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.04em}
+  .mark{width:26px;height:26px;position:relative;display:inline-block}
+  .mark::before{content:"";position:absolute;left:50%;top:-4px;width:2px;height:34px;
+    background:var(--accent);transform:translateX(-50%)}
+  .mark::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:18px;
+    border:2px solid var(--accent);border-radius:50%;transform:translate(-50%,-50%)}
+  nav{display:flex;align-items:center;gap:26px;font-size:14px;color:var(--muted)}
+  nav a:hover{color:var(--ink)}
+  .ghost{border:1px solid var(--ink);padding:8px 14px;color:var(--ink);font-size:13px}
+  .hero{display:grid;grid-template-columns:1.02fr 1.25fr;gap:54px;align-items:center;
+    padding:54px 0 64px}
+  .eyebrow{display:flex;align-items:center;gap:10px;font-size:12px;letter-spacing:.22em;
+    color:var(--muted);text-transform:uppercase;margin-bottom:22px}
+  .eyebrow i{width:7px;height:7px;border-radius:50%;background:var(--accent);display:block}
+  h1{font-size:clamp(42px,5.2vw,76px);line-height:1.12;letter-spacing:-.055em;margin:0 0 24px;font-weight:900}
+  h1 em{font-style:normal;color:var(--accent);white-space:nowrap}
+  .lede{font-size:18px;line-height:1.75;color:#4B463D;max-width:470px;margin:0 0 32px}
+  .actions{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:14px 22px;font-size:15px;font-weight:700;
+    border:1px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;
+    transition:transform .15s ease, background .15s ease, color .15s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{background:#C64A23}
+  .video-card{position:relative;background:var(--card);border:1px solid var(--ink);
+    box-shadow:var(--shadow);padding:10px}
+  .video-card video{display:block;width:100%;height:auto;background:#111}
+  .video-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 2px;
+    font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .sound{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);
+    background:var(--paper2);padding:7px 12px;font-size:12px;color:var(--ink);cursor:pointer}
+  .sound:hover{border-color:var(--ink)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);margin:0 0 86px}
+  .stat{background:var(--paper);padding:22px 20px}
+  .stat b{display:block;font-size:30px;letter-spacing:-.04em;font-weight:900}
+  .stat span{font-size:12px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+  section{padding:0 0 92px}
+  .kicker{font-size:12px;letter-spacing:.22em;color:var(--accent);text-transform:uppercase;
+    font-weight:800;margin-bottom:14px}
+  h2{font-size:clamp(30px,3.6vw,46px);letter-spacing:-.04em;margin:0 0 18px;font-weight:900}
+  .sub{font-size:17px;line-height:1.8;color:#4B463D;max-width:720px;margin:0 0 38px}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .card{background:var(--card);border:1px solid var(--line);padding:28px 26px}
+  .card .num{font:700 12px/1 monospace;color:var(--accent);letter-spacing:.1em;margin-bottom:22px}
+  .card h3{font-size:21px;margin:0 0 10px;letter-spacing:-.02em}
+  .card p{font-size:14.5px;line-height:1.75;color:var(--muted);margin:0}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+  .step{border-top:2px solid var(--ink);padding-top:18px}
+  .step b{display:block;font:700 12px/1 monospace;color:var(--accent);letter-spacing:.1em;margin-bottom:14px}
+  .step h3{font-size:18px;margin:0 0 8px}
+  .step p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}
+  .oss{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:start;
+    background:var(--ink);color:var(--paper);padding:52px;margin-bottom:86px}
+  .oss h2{color:var(--paper);margin-bottom:16px}
+  .oss p{color:#BDB5A6;font-size:15.5px;line-height:1.8;margin:0 0 24px}
+  .oss .links{display:flex;flex-direction:column;gap:0}
+  .oss .links a,.oss .links a:visited{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 0;border-bottom:1px solid #3A3730;font-size:15px;color:#F2ECE1;
+    -webkit-text-fill-color:#F2ECE1}
+  .oss .links a:hover{color:var(--accent);-webkit-text-fill-color:var(--accent)}
+  .oss .links span{font:12px monospace;color:var(--accent);-webkit-text-fill-color:var(--accent)}
+  footer{border-top:1px solid var(--line);padding:30px 0 46px;display:flex;align-items:flex-start;
+    justify-content:space-between;gap:30px;font-size:12.5px;line-height:1.7;color:var(--muted)}
+  footer a{text-decoration:underline;text-underline-offset:3px}
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr;gap:34px;padding-top:26px}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .cards,.steps{grid-template-columns:1fr 1fr}
+    .oss{grid-template-columns:1fr;padding:34px}
+    nav a:not(.ghost){display:none}
+  }
+  @media (max-width:560px){
+    .wrap{padding:0 20px}
+    .stats,.cards,.steps{grid-template-columns:1fr}
+    footer{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="#top"><span class="mark"></span><span>拾光</span></a>
+    <nav>
+      <a href="#story">故事</a>
+      <a href="#method">方法</a>
+      <a href="#oss">开源</a>
+      <a class="ghost" href="https://github.com/liutingqiu/codefilm">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" style="padding-bottom:48px">
+      <div>
+        <div class="eyebrow"><i></i>A code-made brand film</div>
+        <h1>把想法，<br>变成<em>下一步</em>。</h1>
+        <p class="lede">一支 32 秒的品牌片。画面、声音、字幕，全部由代码生成；没有剪辑软件，没有素材库，没有视频模型。</p>
+        <div class="actions">
+          <button class="btn primary" id="watch">▶ 观看完整版 · 有声</button>
+          <a class="btn" href="https://github.com/liutingqiu/codefilm">查看源码 ↗</a>
+        </div>
+      </div>
+      <div>
+        <div class="video-card">
+          <video id="film" src="promo/out/shiguang-promo.mp4" poster="assets/poster.jpg"
+                 autoplay muted loop playsinline preload="metadata"></video>
+          <div class="video-bar">
+            <span>拾光 · 32s · 1920×1080 · 30fps</span>
+            <button class="sound" id="sound">🔇 打开声音</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div class="stat"><b>32s</b><span>时长</span></div>
+      <div class="stat"><b>960</b><span>逐帧渲染</span></div>
+      <div class="stat"><b>1</b><span>个 HTML 文件</span></div>
+      <div class="stat"><b>0</b><span>素材库 / 视频模型</span></div>
+    </div>
+
+    <section id="story">
+      <div class="kicker">The story</div>
+      <h2>散落的想法，值得被收成一束光。</h2>
+      <p class="sub">拾光是一个虚构的 AI 工作台：把便签、聊天和文档里的碎片，连成一份能执行的计划。这支片子用同一个隐喻讲它——从散落，到清晰。</p>
+      <div class="cards">
+        <div class="card"><div class="num">01</div><h3>一百个想法</h3><p>开场是 30 张漂浮的便签，它们不是贴图，是 DOM；每一张的位移、旋转和透明度都是时间的函数。</p></div>
+        <div class="card"><div class="num">02</div><h3>收成一束光</h3><p>便签向中心收拢，变成一条竖线，再长成一个标记。没有转场插件，只有位置和缩放的插值。</p></div>
+        <div class="card"><div class="num">03</div><h3>从散落到清晰</h3><p>左侧的混乱与右侧的计划同屏对照。最后 5 秒，所有声音一起收束到一句品牌主张。</p></div>
+      </div>
+    </section>
+
+    <section id="method">
+      <div class="kicker">The method</div>
+      <h2>不是剪辑，是代码。</h2>
+      <p class="sub">codefilm 是一个可移植的 agent skill：给它一条参考视频或一个主题，它先判断能不能用代码重建，再逐帧验证，不把“看起来像”当成“做对了”。</p>
+      <div class="steps">
+        <div class="step"><b>01 / ROUTE</b><h3>先判断</h3><p>平面动效、UI、字、图表 → 代码。真人、实拍、复杂 3D → 生成或剪辑。不承诺做不到的事。</p></div>
+        <div class="step"><b>02 / ANALYZE</b><h3>量出来</h3><p>切点、镜头长度、静止比、运动强度、调色板、语气。形容词全部换成数字。</p></div>
+        <div class="step"><b>03 / BUILD</b><h3>写成代码</h3><p>一个 HTML，一个 <code>render(t)</code>。没有 CSS 动画、没有随机数、没有墙钟时间。</p></div>
+        <div class="step"><b>04 / VERIFY</b><h3>逐帧对</h3><p>并排帧差、确定性、循环缝、节奏与音频 oracle。通过才交付。</p></div>
+      </div>
+    </section>
+
+    <section id="oss">
+      <div class="oss">
+        <div>
+          <div class="kicker">Open source</div>
+          <h2>整套引擎，MIT。</h2>
+          <p>codefilm 的脚本、模板、动效参考、质检门，以及这支片子的全部源码，都在一个仓库里。你可以把它装进 Claude Code、Codex 或任何能读文件的 agent。</p>
+          <p style="font-size:13px;color:#8F8779">借鉴的 30+ 个项目、许可证与具体借鉴点，全部列在 ATTRIBUTIONS.md。</p>
+        </div>
+        <div class="links">
+          <a href="https://github.com/liutingqiu/codefilm">GitHub 仓库 <span>↗</span></a>
+          <a href="skill/SKILL.md">codefilm SKILL.md <span>↗</span></a>
+          <a href="promo/README.md">这支片子的制作笔记 <span>↗</span></a>
+          <a href="docs/00-synthesis.md">35 个仓库的调研 <span>↗</span></a>
+          <a href="ATTRIBUTIONS.md">借鉴与许可证 <span>↗</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div>拾光 / Shiguang 是为本开源项目虚构的产品与人设，不代表任何真实公司。<br>
+      codefilm © 2026 liutingqiu · MIT</div>
+    <div><a href="https://github.com/liutingqiu/codefilm">GitHub</a> · <a href="ATTRIBUTIONS.md">Attributions</a> · <a href="LICENSE">License</a></div>
+  </footer>
+</div>
+
+<script>
+  const film = document.getElementById('film');
+  const sound = document.getElementById('sound');
+  const watch = document.getElementById('watch');
+  function withSound() {
+    film.muted = false;
+    film.currentTime = 0;
+    film.play();
+    sound.textContent = '🔊 关闭声音';
+  }
+  function toggleSound() {
+    film.muted = !film.muted;
+    sound.textContent = film.muted ? '🔇 打开声音' : '🔊 关闭声音';
+    if (!film.muted) film.play();
+  }
+  sound.addEventListener('click', toggleSound);
+  watch.addEventListener('click', withSound);
+</script>
+</body>
+</html>

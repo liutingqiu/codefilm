@@ -1,0 +1,15 @@
+{
+ "comp": "D:\\mine\\video-skills-lab\\codefilm\\examples\\think-big\\comp.html",
+ "out": "D:\\mine\\video-skills-lab\\codefilm\\examples\\think-big\\out.mp4",
+ "fps": 24.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "scale": 1.0,
+ "frames": 62,
+ "duration": 2.583,
+ "seconds": 4.6,
+ "audio": null,
+ "errors": []
+}

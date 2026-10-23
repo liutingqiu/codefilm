@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+
+# Generated film working dirs
+skill/work/
+skill/out/
+skill/diff/
+promo/audio/
+promo/out/video.mp4
+promo/out/mux.mp4
+promo/out/t*.png
+promo/out/f*.png
+promo/out/still_*.png
+promo/out/around*.png
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log

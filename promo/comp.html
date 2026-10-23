@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<link rel="icon" href="data:,">
+<title>拾光 · 把想法变成下一步</title>
+<style>
+  :root{
+    --paper:#F2ECE1; --paper2:#FBF7EE; --ink:#1B1A17; --muted:#8A8275;
+    --accent:#D9552B; --green:#2F7D5B; --blue:#3B6EA5; --yellow:#E7B84B;
+    --line:#D8CFC0; --card:#FFFDF8;
+    --display:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    --body:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--paper)}
+  body{font-family:var(--body);color:var(--ink)}
+  #stage{position:absolute;inset:0;overflow:hidden;background:var(--paper)}
+  #stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(1100px 700px at 22% 0%, rgba(255,255,255,.55) 0%, transparent 62%),
+               radial-gradient(900px 600px at 100% 100%, rgba(217,85,43,.06) 0%, transparent 58%);}
+  #stage.dark::before{background:none}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.035;
+    background-image:radial-gradient(#000 1px, transparent 1px);background-size:4px 4px}
+  #topline{position:absolute;left:84px;top:62px;display:flex;align-items:center;gap:22px;
+    font-size:20px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+  #topline b{color:var(--ink);font-weight:800;letter-spacing:.06em}
+  #topline .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);display:block}
+  #timecode{position:absolute;left:84px;bottom:54px;font:15px/1 monospace;color:var(--muted);
+    letter-spacing:.08em;display:none}
+
+  .scene{position:absolute;inset:0}
+  .headline{position:absolute;left:0;width:100%;text-align:center;font-family:var(--display);
+    font-weight:900;font-size:152px;line-height:1.12;letter-spacing:-.055em;color:var(--ink);
+    white-space:nowrap;transform-origin:50% 50%;will-change:transform,opacity,filter}
+  .headline.accent{color:var(--accent)}
+  #h1a{top:292px}
+  #h1b{top:470px}
+  #s1sub{position:absolute;right:84px;top:62px;text-align:right;font-size:22px;
+    letter-spacing:.22em;color:var(--muted);will-change:opacity}
+  .char{display:inline-block;will-change:transform,opacity,filter}
+
+  /* chaos cards */
+  #chaos{position:absolute;inset:0;pointer-events:none}
+  .note{position:absolute;width:220px;height:132px;background:var(--card);border:2px solid var(--ink);
+    box-shadow:7px 7px 0 rgba(27,26,23,.12);padding:14px 16px;transform-origin:50% 50%;
+    will-change:transform,opacity}
+  .note .bar{height:9px;width:46%;background:var(--accent);margin-bottom:12px}
+  .note .ln{height:7px;background:#D9D1C2;margin:8px 0;width:100%}
+  .note .ln.s{width:64%}
+  .note .tag{position:absolute;right:12px;bottom:10px;font-size:14px;color:var(--muted);letter-spacing:.08em}
+
+  /* s2 columns */
+  .col-label{position:absolute;top:196px;font-size:24px;letter-spacing:.22em;color:var(--muted);
+    font-weight:700;will-change:opacity}
+  #counter{position:absolute;right:120px;top:180px;font-family:var(--display);font-weight:900;
+    font-size:92px;letter-spacing:-.04em;color:var(--accent);text-align:right;will-change:opacity,transform}
+  #counter small{display:block;font-family:var(--body);font-size:22px;font-weight:600;
+    letter-spacing:.16em;color:var(--muted);margin-top:6px}
+  #cursor1{position:absolute;left:0;top:0;width:46px;height:58px;will-change:transform,opacity;
+    filter:drop-shadow(0 3px 6px rgba(0,0,0,.25))}
+
+  /* s3 reveal */
+  #beam{position:absolute;left:50%;top:50%;width:8px;height:0;background:var(--accent);
+    transform:translate(-50%,-50%);transform-origin:50% 50%;opacity:0;will-change:height,opacity}
+  .mark{position:absolute;left:50%;top:250px;width:180px;height:180px;transform:translate(-50%,-50%) scale(0);
+    transform-origin:50% 50%;will-change:transform,opacity}
+  .mark .sun{position:absolute;left:50%;top:50%;width:112px;height:112px;border:6px solid var(--accent);
+    border-radius:50%;transform:translate(-50%,-50%);background:rgba(217,85,43,.08)}
+  .mark .ray{position:absolute;left:50%;top:-14px;width:6px;height:150px;background:var(--accent);
+    transform:translateX(-50%);border-radius:3px}
+  #brand-big{position:absolute;left:0;width:100%;top:430px;text-align:center;font-family:var(--display);
+    font-weight:900;font-size:220px;letter-spacing:-.08em;color:var(--ink);opacity:0;
+    transform-origin:50% 50%;will-change:transform,opacity}
+  #s3sub{position:absolute;left:0;width:100%;top:700px;text-align:center;font-size:46px;
+    letter-spacing:.12em;color:var(--muted);opacity:0;will-change:opacity}
+
+  /* s4 editor */
+  .win{position:absolute;background:var(--card);border:2px solid var(--ink);
+    box-shadow:15px 15px 0 rgba(27,26,23,.13);transform-origin:50% 50%;will-change:transform,opacity,filter}
+  #editor{left:560px;top:220px;width:800px;height:600px;padding:0;overflow:hidden}
+  .titlebar{height:56px;background:var(--ink);color:var(--card);display:flex;align-items:center;
+    gap:12px;padding:0 22px;font-size:20px;letter-spacing:.08em}
+  .titlebar i{width:12px;height:12px;border-radius:50%;background:#6F6A60;display:block}
+  .titlebar i:first-child{background:var(--accent)}
+  #editor .titlebar span{margin-left:14px;color:#D9D1C2;letter-spacing:.12em}
+  .editor-body{position:absolute;left:34px;right:34px;top:92px;bottom:100px}
+  #typed{font-size:38px;line-height:1.55;font-weight:600;color:var(--ink);white-space:pre-wrap;
+    min-height:120px;letter-spacing:.02em}
+  .caret{display:inline-block;width:4px;height:42px;background:var(--accent);vertical-align:-7px;
+    margin-left:4px;will-change:opacity}
+  #thumb{position:absolute;left:0;bottom:0;width:300px;height:150px;border:2px dashed var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted);
+    background:#F8F2E7;opacity:0;will-change:opacity,transform}
+  #save{position:absolute;right:34px;bottom:32px;min-width:190px;height:62px;background:var(--accent);
+    color:var(--card);display:flex;align-items:center;justify-content:center;font-size:24px;
+    font-weight:800;letter-spacing:.08em;border:2px solid var(--ink);transform-origin:50% 50%;
+    will-change:transform,background}
+  #saved-card{left:1270px;top:300px;width:360px;height:auto;min-height:130px;padding:24px 26px;
+    font-size:26px;font-weight:700;line-height:1.5;opacity:0;will-change:transform,opacity}
+  #saved-card b{color:var(--accent)}
+  .tag{position:absolute;font-size:22px;letter-spacing:.22em;color:var(--muted);font-weight:700;
+    will-change:opacity,transform}
+  #tag4{left:154px;top:230px}
+  #tag5{left:154px;top:190px}
+  #tag6{left:154px;top:190px}
+
+  /* s5 graph */
+  #links{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none}
+  #links path{fill:none;stroke:var(--line);stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+  .node{position:absolute;width:310px;min-height:150px;background:var(--card);border:2px solid var(--ink);
+    box-shadow:8px 8px 0 rgba(27,26,23,.12);padding:24px 26px;font-size:22px;color:var(--muted);
+    letter-spacing:.12em;transform-origin:50% 50%;will-change:transform,opacity}
+  .node b{display:block;margin-top:10px;font-size:30px;color:var(--ink);letter-spacing:.02em}
+  .node.core{width:250px;min-height:130px;display:flex;align-items:center;justify-content:center;
+    background:var(--accent);color:var(--card);border-color:var(--ink);font-size:40px;font-weight:900;
+    letter-spacing:.08em}
+  #n0{left:835px;top:450px}
+  #n1{left:320px;top:240px}
+  #n2{left:320px;top:650px}
+  #n3{left:1290px;top:445px}
+
+  /* s6 plan */
+  #plan{left:560px;top:200px;width:800px;height:620px;padding:0;overflow:hidden}
+  #plan .titlebar{font-size:24px}
+  .todo{display:flex;align-items:center;gap:22px;font-size:34px;font-weight:600;
+    margin:38px 54px 0;letter-spacing:.02em}
+  .box{width:40px;height:40px;border:2px solid var(--ink);display:flex;align-items:center;
+    justify-content:center;font-size:26px;font-weight:900;color:var(--green);
+    transform-origin:50% 50%;will-change:transform,opacity}
+  .bar{position:absolute;left:54px;right:54px;bottom:96px;height:18px;border:2px solid var(--ink);
+    padding:2px}
+  .bar i{display:block;width:100%;height:100%;background:var(--green);transform-origin:0 50%;
+    transform:scaleX(0)}
+  .stamp{position:absolute;right:54px;bottom:140px;font-size:44px;font-weight:900;color:var(--accent);
+    border:8px double var(--accent);padding:4px 18px;transform:rotate(-9deg) scale(2);
+    opacity:0;will-change:transform,opacity}
+
+  /* s7 */
+  #clean{left:1080px;top:300px;width:620px;height:470px;padding:0;overflow:hidden;opacity:0}
+  #clean .titlebar{font-size:22px}
+  #clean .todo{font-size:26px;margin:28px 40px 0;gap:16px}
+  #clean .box{width:32px;height:32px;font-size:20px}
+  #h7a{top:318px;text-align:left;left:150px;width:900px;font-size:124px}
+  #h7b{top:470px;text-align:left;left:150px;width:900px;font-size:124px;color:var(--accent)}
+
+  /* s8 */
+  #endmark{position:absolute;left:50%;top:250px;width:220px;height:220px;transform:translate(-50%,0) scale(0);
+    transform-origin:50% 50%;will-change:transform,opacity}
+  #endmark .sun{position:absolute;left:50%;top:50%;width:170px;height:170px;border:9px solid var(--accent);
+    border-radius:50%;transform:translate(-50%,-50%);background:rgba(217,85,43,.1)}
+  #endmark .ray{position:absolute;left:50%;top:-20px;width:9px;height:260px;background:var(--accent);
+    transform:translateX(-50%);border-radius:5px}
+  #endname{position:absolute;left:0;width:100%;top:500px;text-align:center;font-family:var(--display);
+    font-weight:900;font-size:190px;letter-spacing:-.08em;color:var(--paper2);opacity:0;
+    will-change:transform,opacity}
+  #endtag{position:absolute;left:0;width:100%;top:720px;text-align:center;font-size:44px;
+    letter-spacing:.12em;color:#C9C1B3;opacity:0;will-change:opacity}
+  #endurl{position:absolute;left:0;width:100%;top:820px;text-align:center;font-size:26px;
+    letter-spacing:.2em;color:#8F887B;opacity:0;will-change:opacity}
+  #endcta{position:absolute;left:50%;top:880px;transform:translateX(-50%);padding:14px 40px;
+    border:2px solid var(--accent);color:var(--accent);font-size:24px;letter-spacing:.22em;
+    opacity:0;will-change:opacity}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="grain"></div>
+  <div id="topline"><span class="dot"></span><b>拾光</b><span>SHIGUANG · 2026</span></div>
+  <div id="timecode"></div>
+
+  <div id="chaos"></div>
+
+  <div class="scene" id="s1">
+    <div class="headline" id="h1a" data-text="脑子里，">脑子里，</div>
+    <div class="headline accent" id="h1b" data-text="有一百个想法。">有一百个想法。</div>
+    <div id="s1sub" data-text="× 100">× 100</div>
+  </div>
+
+  <div class="scene" id="s2">
+    <div class="col-label" id="lab1" style="left:330px">便签</div>
+    <div class="col-label" id="lab2" style="left:930px">聊天</div>
+    <div class="col-label" id="lab3" style="left:1530px">文档</div>
+    <div id="counter"><span id="cnum">0</span><small>条未整理</small></div>
+    <svg id="cursor1" viewBox="0 0 34 44"><path d="M4 3 L30 22 L18 24 L26 40 L20 43 L12 27 L4 36 Z"
+      fill="#1B1A17" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg>
+  </div>
+
+  <div class="scene" id="s3">
+    <div id="beam"></div>
+    <div class="mark" id="mark"><i class="ray"></i><i class="sun"></i></div>
+    <div id="brand-big" data-text="拾光">拾光</div>
+    <div id="s3sub" data-text="把它们收成一束光。">把它们收成一束光。</div>
+  </div>
+
+  <div class="scene" id="s4">
+    <div class="tag" id="tag4" data-text="记下">01 · 记下</div>
+    <div class="win" id="editor">
+      <div class="titlebar"><i></i><i></i><i></i><span>拾光 · 新想法</span></div>
+      <div class="editor-body">
+        <div id="typed"><span id="typed-text"></span><span class="caret" id="caret"></span></div>
+        <div id="thumb">图片 · 白板草图</div>
+      </div>
+      <div id="save">收进拾光</div>
+    </div>
+    <div class="window note" id="saved-card">已收进 <b>「本周」</b><br><span style="font-size:20px;color:var(--muted)">稍后继续整理</span></div>
+  </div>
+
+  <div class="scene" id="s5">
+    <div class="tag" id="tag5" data-text="连起来">02 · 连起来</div>
+    <svg id="links"><path id="link1" pathLength="1"/><path id="link2" pathLength="1"/><path id="link3" pathLength="1"/></svg>
+    <div class="node core" id="n0" data-text="方案">方案</div>
+    <div class="node" id="n1">目标<b>周五提案</b></div>
+    <div class="node" id="n2">素材<b>客户反馈</b></div>
+    <div class="node" id="n3">下一步<b>写方案</b></div>
+  </div>
+
+  <div class="scene" id="s6">
+    <div class="tag" id="tag6" data-text="做出来">03 · 做出来</div>
+    <div class="win" id="plan">
+      <div class="titlebar"><i></i><i></i><i></i><span>本周计划</span></div>
+      <div class="todo"><span class="box" id="b0">✓</span>整理客户反馈</div>
+      <div class="todo"><span class="box" id="b1">✓</span>写一版方案</div>
+      <div class="todo"><span class="box" id="b2">✓</span>周五前发出</div>
+      <div class="bar"><i id="fill"></i></div>
+      <div class="stamp" id="stamp">完成</div>
+    </div>
+  </div>
+
+  <div class="scene" id="s7">
+    <div class="headline" id="h7a" data-text="从散落，">从散落，</div>
+    <div class="headline" id="h7b" data-text="到清晰。">到清晰。</div>
+    <div class="win" id="clean">
+      <div class="titlebar"><i></i><i></i><i></i><span>本周计划 · 已整理</span></div>
+      <div class="todo"><span class="box">✓</span>整理客户反馈</div>
+      <div class="todo"><span class="box">✓</span>写一版方案</div>
+      <div class="todo"><span class="box">✓</span>周五前发出</div>
+    </div>
+  </div>
+
+  <div class="scene" id="s8">
+    <div id="endmark"><i class="ray"></i><i class="sun"></i></div>
+    <div id="endname" data-text="拾光">拾光</div>
+    <div id="endtag" data-text="把想法，变成下一步。">把想法，变成下一步。</div>
+    <div id="endurl" data-text="shiguang.app">shiguang.app</div>
+    <div id="endcta" data-text="内测预约">内测预约</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const DUR = 32.0;
+  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false};
+  const T = {
+    s1:{a:0.0,b:3.6}, s2:{a:3.6,b:7.8}, s3:{a:7.8,b:11.4}, s4:{a:11.4,b:16.7},
+    s5:{a:16.7,b:21.5}, s6:{a:21.5,b:24.5}, s7:{a:24.5,b:27.6}, s8:{a:27.6,b:32.0}
+  };
+  const $ = id => document.getElementById(id);
+  const clamp = (v,a=0,b=1) => Math.min(b, Math.max(a, v));
+  const smooth = p => { p = clamp(p); return p*p*(3-2*p); };
+  const easeOut = p => 1 - Math.pow(1-clamp(p), 3);
+  const easeIn = p => Math.pow(clamp(p), 3);
+  const lerp = (a,b,p) => a + (b-a)*p;
+  const seed = (n) => { let s = (n*9301+49297)%233280; return () => (s = (s*9301+49297)%233280) / 233280; };
+
+  function place(el,x,y,s=1,op=1,rot=0,blur=0){
+    el.style.transform = `translate(${x.toFixed(2)}px,${y.toFixed(2)}px) scale(${s.toFixed(4)}) rotate(${rot.toFixed(2)}deg)`;
+    el.style.opacity = op.toFixed(3);
+    el.style.filter = blur > .05 ? `blur(${blur.toFixed(2)}px)` : 'none';
+  }
+
+  // split headlines into characters
+  const charEls = {};
+  document.querySelectorAll('[data-text]').forEach(el => {
+    if (!el.classList.contains('headline')) return;
+    const text = el.dataset.text;
+    el.textContent = '';
+    const arr = [];
+    for (const ch of text) {
+      const s = document.createElement('span');
+      s.className = 'char';
+      s.textContent = ch;
+      el.appendChild(s);
+      arr.push(s);
+    }
+    charEls[el.id] = arr;
+  });
+  function rise(id, t, start, stagger=0.055, dist=64){
+    const arr = charEls[id] || [];
+    arr.forEach((el,i) => {
+      const p = easeOut((t - start - i*stagger) / 0.55);
+      el.style.opacity = p.toFixed(3);
+      el.style.transform = `translateY(${((1-p)*dist).toFixed(1)}px)`;
+      el.style.filter = (1-p) > .08 ? `blur(${((1-p)*7).toFixed(1)}px)` : 'none';
+    });
+  }
+  function hideChars(id){ (charEls[id]||[]).forEach(el => { el.style.opacity = '0'; }); }
+
+  // chaos cards
+  const CHAOS = 30;
+  const chaosEls = [];
+  const chaosLayer = $('chaos');
+  const colors = ['var(--accent)','var(--green)','var(--blue)','var(--yellow)'];
+  for (let i=0;i<CHAOS;i++){
+    const d = document.createElement('div');
+    d.className = 'note';
+    d.innerHTML = `<div class="bar" style="background:${colors[i%4]}"></div>
+      <div class="ln"></div><div class="ln s"></div><div class="ln s"></div>
+      <div class="tag">${['便签','聊天','文档','灵感'][i%4]}</div>`;
+    chaosLayer.appendChild(d);
+    chaosEls.push(d);
+  }
+  const rnd = seed(7);
+  const jitter = Array.from({length:CHAOS}, () => ({x:(rnd()-.5)*54, y:(rnd()-.5)*40, r: (rnd()-.5)*9}));
+
+  function gridState(i){
+    const col = i%6, row = Math.floor(i/6);
+    return {x:180 + col*285 + jitter[i].x, y:120 + row*172 + jitter[i].y, s:.66, r:jitter[i].r, o:.42};
+  }
+  function colState(i){
+    const col = i%3, row = Math.floor(i/3);
+    return {x:[260,860,1460][col], y:250 + row*68, s:.80, r:(col-1)*2.2 + jitter[i].r*.3, o:.92};
+  }
+  function centerState(){ return {x:960, y:540, s:.08, r:0, o:0}; }
+  function leftState(i){
+    const col = i%3, row = Math.floor(i/3);
+    return {x:170 + col*180, y:600 + row*145, s:.48, r:(i%2?4:-4), o:.28};
+  }
+
+  function renderChaos(t){
+    for (let i=0;i<CHAOS;i++){
+      const el = chaosEls[i];
+      let st;
+      if (t < T.s2.a) {
+        const g = gridState(i);
+        const enter = easeOut((t - 0.30 - (i%10)*0.035) / 0.7);
+        st = {...g, o: g.o * enter};
+      } else if (t < T.s3.a) {
+        const q = smooth((t - T.s2.a) / 0.85);
+        const g = gridState(i), c = colState(i);
+        st = {x:lerp(g.x,c.x,q), y:lerp(g.y,c.y,q), s:lerp(g.s,c.s,q), r:lerp(g.r,c.r,q), o:lerp(g.o,c.o,q)};
+      } else if (t < T.s3.b) {
+        const q = smooth((t - T.s3.a) / 0.95);
+        const c = colState(i), e = centerState();
+        st = {x:lerp(c.x,e.x,q), y:lerp(c.y,e.y,q), s:lerp(c.s,e.s,q), r:lerp(c.r,e.r,q), o:lerp(c.o,e.o,q)};
+      } else if (t < T.s7.a) {
+        st = {x:960,y:540,s:.05,r:0,o:0};
+      } else {
+        if (i < 6) {
+          const e = leftState(i);
+          const q = smooth((t - T.s7.a) / 0.45) * (1 - smooth((t - 26.4) / 0.6));
+          st = {...e, o:e.o*q};
+        } else st = {x:960,y:540,s:.05,r:0,o:0};
+      }
+      place(el, st.x, st.y, st.s, st.o, st.r, 0);
+    }
+  }
+
+  function render(t){
+    const stage = $('stage');
+    stage.classList.toggle('dark', t >= T.s8.a);
+    // background phases
+    if (t >= T.s8.a) stage.style.background = '#161513';
+    else if (t >= T.s3.a && t < T.s4.a) stage.style.background = '#FAF6EC';
+    else stage.style.background = 'var(--paper)';
+
+    // s1
+    rise('h1a', t, 0.55, 0.06, 70);
+    rise('h1b', t, 0.95, 0.05, 70);
+    const s1out = smooth((t - 3.05) / 0.38);
+    $('h1a').style.opacity = (1-s1out).toFixed(3);
+    $('h1b').style.opacity = (1-s1out).toFixed(3);
+    $('h1a').style.transform = `translateY(${(-s1out*50).toFixed(1)}px)`;
+    $('h1b').style.transform = `translateY(${(-s1out*50).toFixed(1)}px)`;
+    $('s1sub').style.opacity = (easeOut((t-1.65)/0.5) * (1-s1out)).toFixed(3);
+    $('s1sub').style.transform = `translateY(${(-s1out*30).toFixed(1)}px)`;
+
+    // s2
+    const s2in = easeOut((t - T.s2.a) / 0.5);
+    const s2out = smooth((t - 7.35) / 0.4);
+    const s2vis = s2in * (1-s2out);
+    ['lab1','lab2','lab3'].forEach(id => { $(id).style.opacity = s2vis.toFixed(3); });
+    $('counter').style.opacity = s2vis.toFixed(3);
+    $('counter').style.transform = `translateY(${((1-s2in)*24).toFixed(1)}px)`;
+    const n = Math.round(128 * clamp((t - 3.95) / 2.4));
+    $('cnum').textContent = String(n);
+    // cursor path
+    const cu = smooth((t - 4.1) / 3.0);
+    const cx = lerp(280, 1510, cu);
+    const cy = 760 + Math.sin(cu*Math.PI*2)*180 - cu*120;
+    const click = Math.max(easeOut((t-5.75)/0.12)*(1-easeOut((t-5.95)/0.2)), easeOut((t-6.55)/0.12)*(1-easeOut((t-6.75)/0.2)));
+    $('cursor1').style.opacity = (s2vis * (t>4.0?1:0)).toFixed(3);
+    place($('cursor1'), cx-18, cy-26, 1 - click*.12, s2vis);
+
+    // s3
+    const s3in = easeOut((t - T.s3.a) / 0.55);
+    const s3out = smooth((t - 11.15) / 0.3);
+    const beamH = 520 * easeOut((t - 8.0) / 0.85);
+    $('beam').style.height = `${beamH.toFixed(1)}px`;
+    $('beam').style.opacity = (t>=8.0 ? (1-s3out)*(1-smooth((t-8.9)/0.5)) : 0).toFixed(3);
+    const markS = easeOut((t - 8.55) / 0.55);
+    $('mark').style.transform = `translate(-50%,-50%) scale(${(markS*(1-s3out)).toFixed(3)})`;
+    $('mark').style.opacity = (1-s3out).toFixed(3);
+    const brandP = easeOut((t - 9.05) / 0.6);
+    $('brand-big').style.opacity = (brandP*(1-s3out)).toFixed(3);
+    $('brand-big').style.transform = `translateY(${((1-brandP)*40 - s3out*30).toFixed(1)}px) scale(${(0.94+0.06*brandP).toFixed(3)})`;
+    const subP = easeOut((t - 9.65) / 0.55);
+    $('s3sub').style.opacity = (subP*(1-s3out)).toFixed(3);
+    $('s3sub').style.transform = `translateY(${((1-subP)*24).toFixed(1)}px)`;
+
+    // s4
+    const e4in = easeOut((t - 11.6) / 0.5);
+    const e4out = smooth((t - 16.35) / 0.3);
+    place($('editor'), 0, (1-e4in)*60 - e4out*40, 0.96+0.04*e4in, e4in*(1-e4out), 0, e4out*6);
+    $('tag4').style.opacity = (e4in*(1-e4out)).toFixed(3);
+    $('tag4').style.transform = `translateX(${((1-e4in)*-24).toFixed(1)}px)`;
+    const text = '周五前，把方案发给客户';
+    const typedN = Math.floor(clamp((t - 12.0) / 1.55) * text.length);
+    $('typed-text').textContent = text.slice(0, typedN);
+    $('caret').style.opacity = (t>=12.0 && t<14.7 ? (Math.floor(t*2)%2 ? '0':'1') : '0');
+    const thumbP = easeOut((t - 14.05) / 0.45);
+    $('thumb').style.opacity = (thumbP*(1-e4out)).toFixed(3);
+    $('thumb').style.transform = `translateY(${((1-thumbP)*20).toFixed(1)}px)`;
+    const press = easeOut((t-14.55)/0.1)*(1-easeOut((t-14.8)/0.25));
+    $('save').style.transform = `scale(${(1-press*0.08).toFixed(3)})`;
+    $('save').style.background = t>=14.55 ? 'var(--green)' : 'var(--accent)';
+    const savedP = easeOut((t - 14.75) / 0.45);
+    $('saved-card').style.opacity = (savedP*(1-e4out)).toFixed(3);
+    $('saved-card').style.transform = `translateY(${((1-savedP)*30).toFixed(1)}px) scale(${(0.9+0.1*savedP).toFixed(3)})`;
+
+    // s5
+    const e5in = easeOut((t - T.s5.a) / 0.5);
+    const e5out = smooth((t - 21.15) / 0.3);
+    const v5 = e5in*(1-e5out);
+    $('tag5').style.opacity = v5.toFixed(3);
+    const nodes = [['n0',16.85],['n1',17.25],['n2',17.85],['n3',18.45]];
+    nodes.forEach(([id,st]) => {
+      const p = easeOut((t - st) / 0.45);
+      $(id).style.opacity = (p*(1-e5out)).toFixed(3);
+      $(id).style.transform = `translateY(${((1-p)*26).toFixed(1)}px) scale(${(0.94+0.06*p).toFixed(3)})`;
+    });
+    // links draw
+    const draw = easeOut((t - 17.55) / 1.15);
+    ['link1','link2','link3'].forEach((id,i) => {
+      const p = clamp(draw*1.4 - i*0.18);
+      $(id).style.strokeDashoffset = (1-p).toFixed(4);
+      $(id).style.opacity = (v5 * (p>0?1:0)).toFixed(3);
+    });
+    // paths (set once per render; cheap)
+    const c = {x:960,y:515};
+    const n1 = {x:475,y:315}, n2 = {x:475,y:725}, n3 = {x:1445,y:520};
+    $('link1').setAttribute('d', `M${n1.x+155} ${n1.y+75} Q960 300 ${c.x} ${c.y-65}`);
+    $('link2').setAttribute('d', `M${n2.x+155} ${n2.y+75} Q960 760 ${c.x} ${c.y+65}`);
+    $('link3').setAttribute('d', `M1445 520 L1205 520`);
+
+    // s6
+    const e6in = easeOut((t - 21.7) / 0.5);
+    const e6out = smooth((t - 24.3) / 0.3);
+    const v6 = e6in*(1-e6out);
+    place($('plan'), 0, (1-e6in)*50 - e6out*40, 0.96+0.04*e6in, v6, 0, e6out*6);
+    $('tag6').style.opacity = v6.toFixed(3);
+    const checks = [[22.2,'b0'],[22.8,'b1'],[23.4,'b2']];
+    checks.forEach(([st,id]) => {
+      const p = easeOut((t-st)/0.28);
+      $(id).style.opacity = p.toFixed(3);
+      $(id).style.transform = `scale(${(0.5+0.5*p).toFixed(3)})`;
+    });
+    const fillP = clamp((t - 22.0) / 1.7);
+    $('fill').style.transform = `scaleX(${fillP.toFixed(4)})`;
+    const stampP = easeOut((t - 23.8) / 0.22);
+    $('stamp').style.opacity = (stampP*(1-e6out)).toFixed(3);
+    $('stamp').style.transform = `rotate(-9deg) scale(${(2 - 1*stampP).toFixed(3)})`;
+
+    // s7
+    const e7in = easeOut((t - 24.7) / 0.55);
+    const e7out = smooth((t - 27.25) / 0.3);
+    rise('h7a', t, 24.75, 0.06, 60);
+    rise('h7b', t, 24.90, 0.06, 60);
+    ['h7a','h7b'].forEach(id => {
+      $(id).style.opacity = (1-e7out).toFixed(3);
+      $(id).style.transform = `translateX(${(-e7out*40).toFixed(1)}px)`;
+    });
+    const cleanP = easeOut((t - 24.85) / 0.65);
+    $('clean').style.opacity = (cleanP*(1-e7out)).toFixed(3);
+    $('clean').style.transform = `translateY(${((1-cleanP)*40).toFixed(1)}px) scale(${(0.94+0.06*cleanP).toFixed(3)})`;
+
+    // s8
+    const e8 = t >= T.s8.a;
+    const mark8 = easeOut((t - 27.8) / 0.55);
+    $('endmark').style.opacity = e8 ? '1' : '0';
+    $('endmark').style.transform = `translate(-50%,0) scale(${mark8.toFixed(3)})`;
+    const nameP = easeOut((t - 28.05) / 0.55);
+    $('endname').style.opacity = (nameP).toFixed(3);
+    $('endname').style.transform = `translateY(${((1-nameP)*30).toFixed(1)}px)`;
+    $('endtag').style.opacity = easeOut((t - 28.45) / 0.5).toFixed(3);
+    $('endurl').style.opacity = easeOut((t - 28.9) / 0.5).toFixed(3);
+    $('endcta').style.opacity = easeOut((t - 29.35) / 0.5).toFixed(3);
+    $('endcta').style.transform = `translateX(-50%) translateY(${((1-easeOut((t-29.35)/0.5))*12).toFixed(1)}px)`;
+
+    // chaos layer only in s1-s3 and s7
+    renderChaos(t);
+
+    // top line / timecode
+    $('topline').style.opacity = (t < T.s8.a ? 1 : 0).toFixed(3);
+    $('timecode').textContent = `t = ${t.toFixed(2)}s`;
+  }
+
+  window.__seek = async (t) => { render(clamp(t, 0, DUR)); return true; };
+  window.render = (t) => render(clamp(t, 0, DUR));
+  window.TEXTS = () => {
+    const out = [];
+    document.querySelectorAll('[data-text]').forEach(el => {
+      const op = parseFloat(getComputedStyle(el).opacity || '1');
+      const r = el.getBoundingClientRect();
+      if (op > 0.05 && r.width > 1 && r.height > 1) {
+        out.push({id: el.id || el.dataset.text, text: el.dataset.text,
+                  x0:r.left,y0:r.top,x1:r.right,y1:r.bottom});
+      }
+    });
+    return out;
+  };
+  window.__motion = (t0,t1) => {
+    if (t0 > 3.4 && t0 < 4.6) return 900;
+    if (t0 > 7.8 && t0 < 8.9) return 800;
+    if (t0 > 24.6 && t0 < 26.0) return 700;
+    return 260;
+  };
+  window.__ready = Promise.resolve().then(() => {
+    render(0);
+    document.documentElement.dataset.ready = '1';
+    return true;
+  });
+  const q = new URLSearchParams(location.search);
+  const external = q.has('external');
+  if (q.has('hud')) $('timecode').style.display = 'block';
+  if (q.has('t')) window.__ready.then(() => render(parseFloat(q.get('t'))));
+  else if (q.has('play') || !external) window.__ready.then(() => {
+    const loop = (ts) => { render((ts/1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+})();
+</script>
+</body>
+</html>

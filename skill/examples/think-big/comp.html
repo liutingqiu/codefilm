@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<link rel="icon" href="data:,">
+<title>think-big · codefilm replication</title>
+<style>
+  :root{ --blue:#007BE1; --yellow:#F3DE00; --paper:#FBFBF7; }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--blue)}
+  #stage{position:absolute;inset:0;overflow:hidden;background:var(--blue)}
+  #square{position:absolute;left:50%;top:50%;width:300px;height:300px;background:var(--yellow);
+    transform-origin:50% 50%;will-change:transform}
+  #think{position:absolute;left:0;width:100%;top:330px;text-align:center;color:var(--blue);
+    font-family:"Arial Black","Archivo Black",Impact,sans-serif;font-weight:900;font-size:300px;
+    line-height:1;letter-spacing:-.045em;transform-origin:50% 50%;opacity:0;will-change:transform,opacity}
+  #dot{position:absolute;left:936px;top:232px;width:86px;height:86px;background:var(--yellow);
+    transform-origin:50% 50%;opacity:0;will-change:transform,opacity}
+  #bar{position:absolute;top:-2px;left:0;width:700px;height:1084px;background:var(--yellow);
+    transform-origin:0 50%;opacity:0;will-change:transform,opacity}
+  #time{position:absolute;left:32px;bottom:26px;font:14px monospace;color:rgba(255,255,255,.55);letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="square"></div>
+  <div id="think" data-text="THINK">THINK</div>
+  <div id="dot"></div>
+  <div id="bar"></div>
+  <div id="time"></div>
+</div>
+<script>
+(() => {
+  const DUR = 2.6;
+  window.__meta = {dur: DUR, fps: 24, w: 1920, h: 1080, loop: false};
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const smooth = p => { p = clamp(p); return p * p * (3 - 2 * p); };
+  const easeOut = p => 1 - Math.pow(1 - clamp(p), 3);
+
+  function render(t) {
+    const bg = $('stage');
+    if (t < 0.98) {
+      // scene 1 — blue field, yellow square grows
+      bg.style.background = 'var(--blue)';
+      const p = easeOut(t / 0.55);
+      const s = 0.35 + 0.95 * p;
+      $('square').style.opacity = '1';
+      $('square').style.transform = `translate(-50%,-50%) scale(${s.toFixed(4)})`;
+      $('think').style.opacity = '0';
+      $('dot').style.opacity = '0';
+      $('bar').style.opacity = '0';
+    } else if (t < 2.10) {
+      // scene 2 — white field, THINK + yellow dot on the I
+      bg.style.background = 'var(--paper)';
+      $('square').style.opacity = '0';
+      const q = easeOut((t - 0.98) / 0.48);
+      const s = 0.94 + 0.42 * q;
+      $('think').style.opacity = '1';
+      $('think').style.transform = `scale(${s.toFixed(4)})`;
+      $('dot').style.opacity = '1';
+      $('dot').style.transform = `translate(0px,${(-40 * q).toFixed(1)}px) scale(${(0.8 + 0.35 * q).toFixed(3)})`;
+      $('bar').style.opacity = '0';
+    } else {
+      // scene 3 — yellow bar sweeps right across the white field
+      bg.style.background = 'var(--paper)';
+      $('square').style.opacity = '0';
+      $('think').style.opacity = '0';
+      $('dot').style.opacity = '0';
+      const p = smooth((t - 2.10) / 0.80);
+      $('bar').style.opacity = '1';
+      $('bar').style.transform = `translateX(${(p * 1000).toFixed(1)}px)`;
+    }
+    $('time').textContent = `t = ${t.toFixed(2)}s`;
+  }
+
+  window.__seek = async (t) => { render(clamp(t, 0, DUR)); return true; };
+  window.render = (t) => render(clamp(t, 0, DUR));
+  window.TEXTS = () => {
+    const el = $('think');
+    if (parseFloat(getComputedStyle(el).opacity) < 0.05) return [];
+    const r = el.getBoundingClientRect();
+    return [{id: 'think', text: 'THINK', x0: r.left, y0: r.top, x1: r.right, y1: r.bottom}];
+  };
+  window.__motion = (t0, t1) => (t1 - t0 > 0 ? 900 : 0);
+  window.__ready = Promise.resolve().then(() => {
+    render(0);
+    document.documentElement.dataset.ready = '1';
+    return true;
+  });
+  const q = new URLSearchParams(location.search);
+  const external = q.has('external');
+  if (q.has('t')) window.__ready.then(() => render(parseFloat(q.get('t'))));
+  else if (q.has('play') || !external) window.__ready.then(() => {
+    const loop = (ts) => { render((ts / 1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+})();
+</script>
+</body>
+</html>
