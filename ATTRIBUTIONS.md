@@ -56,7 +56,9 @@ was copied.
 - **Music / SFX:** synthesized from scratch with numpy in `promo/audio_build.py`; no third-party
   samples.
 - **Voice:** generated with [edge-tts](https://github.com/rany2/edge-tts) using the Microsoft
-  `zh-CN-XiaoxiaoNeural` voice. No voice model weights are included.
+  `zh-CN-XiaoxiaoNeural` voice. No voice model weights are included. The generated narration is
+  included as a demo asset and is **not** relicensed under MIT; check Microsoft's terms before
+  redistributing the audio on its own, or regenerate it with a voice you have rights to.
 - **Fonts:** the promo uses the system font “Microsoft YaHei” via CSS. No font files are included or
   redistributed.
 - **Fictional brand:** 拾光 / Shiguang and `shiguang.app` are fictional and created for this demo.

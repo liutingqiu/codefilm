@@ -138,5 +138,8 @@ python skill/scripts/install.py --target claude   # or --target agents, or --des
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The fictional 拾光 brand and its demo film are released under the
-same license. Third-party names and licenses are listed in [ATTRIBUTIONS.md](ATTRIBUTIONS.md).
+MIT — see [LICENSE](LICENSE). The license covers the code, composition and original artwork.
+The narration is generated with edge-tts and is included as a demo asset (not relicensed under MIT);
+see [ATTRIBUTIONS.md](ATTRIBUTIONS.md). The fictional 拾光 brand and its demo film are released under
+the same MIT terms for the original work. Third-party names and licenses are listed in
+[ATTRIBUTIONS.md](ATTRIBUTIONS.md).
