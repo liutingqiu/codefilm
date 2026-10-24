@@ -3,20 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>拾光 · codefilm — 把想法，变成下一步</title>
-<meta name="description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
+<title>codefilm — HTML to MP4 Engine · 拾光 32s</title>
+<meta name="description" content="codefilm 是一个用代码把 HTML/CSS/SVG 渲染成 MP4 的确定性引擎与 agent skill：参考视频复刻、逐帧质检、快门运动模糊。含一支 32 秒全代码生成的品牌片。">
 <meta name="theme-color" content="#F2ECE1">
+<link rel="canonical" href="https://liutingqiu.github.io/html-to-mp4-engine/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="拾光 · codefilm — 把想法，变成下一步">
-<meta property="og:description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
-<meta property="og:image" content="https://liutingqiu.github.io/codefilm/assets/poster.jpg">
+<meta property="og:site_name" content="codefilm">
+<meta property="og:title" content="codefilm — HTML to MP4 Engine · 拾光 32s">
+<meta property="og:description" content="用代码把 HTML/CSS/SVG 渲染成 MP4：确定性 seek(t)、参考视频复刻、逐帧质检。含一支 32 秒全代码生成的品牌片。">
+<meta property="og:image" content="https://liutingqiu.github.io/html-to-mp4-engine/assets/poster.jpg">
 <meta property="og:image:width" content="1920">
 <meta property="og:image:height" content="1080">
-<meta property="og:url" content="https://liutingqiu.github.io/codefilm/">
+<meta property="og:url" content="https://liutingqiu.github.io/html-to-mp4-engine/">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="拾光 · codefilm — 把想法，变成下一步">
-<meta name="twitter:description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
-<meta name="twitter:image" content="https://liutingqiu.github.io/codefilm/assets/poster.jpg">
+<meta name="twitter:title" content="codefilm — HTML to MP4 Engine · 拾光 32s">
+<meta name="twitter:description" content="用代码把 HTML/CSS/SVG 渲染成 MP4：确定性 seek(t)、参考视频复刻、逐帧质检。含一支 32 秒全代码生成的品牌片。">
+<meta name="twitter:image" content="https://liutingqiu.github.io/html-to-mp4-engine/assets/poster.jpg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"codefilm",
+"alternateName":"html-to-mp4-engine","applicationCategory":"DeveloperApplication",
+"operatingSystem":"Windows, macOS, Linux","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},
+"codeRepository":"https://github.com/liutingqiu/html-to-mp4-engine",
+"description":"Deterministic HTML/CSS/SVG to MP4 engine and agent skill for code-made video, reference replication and frame-level QA."}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23D9552B' stroke-width='6'/%3E%3Cline x1='32' y1='2' x2='32' y2='62' stroke='%23D9552B' stroke-width='6'/%3E%3C/svg%3E">
 <style>
   :root{
@@ -122,19 +131,19 @@
       <a href="#story">故事</a>
       <a href="#method">方法</a>
       <a href="#oss">开源</a>
-      <a class="ghost" href="https://github.com/liutingqiu/codefilm">GitHub ↗</a>
+      <a class="ghost" href="https://github.com/liutingqiu/html-to-mp4-engine">GitHub ↗</a>
     </nav>
   </header>
 
   <main id="top">
     <section class="hero" style="padding-bottom:48px">
       <div>
-        <div class="eyebrow"><i></i>A code-made brand film</div>
+        <div class="eyebrow"><i></i>HTML TO MP4 ENGINE · A CODE-MADE BRAND FILM</div>
         <h1>把想法，<br>变成<em>下一步</em>。</h1>
-        <p class="lede">一支 32 秒的品牌片。画面、声音、字幕，全部由代码生成；没有剪辑软件，没有素材库，没有视频模型。</p>
+        <p class="lede">codefilm 把 HTML/CSS/SVG 写成 MP4。这支 32 秒品牌片的画面、声音、字幕全部由代码生成；没有剪辑软件，没有素材库，没有视频模型。</p>
         <div class="actions">
           <button type="button" class="btn primary" id="watch">▶ 观看完整版 · 有声</button>
-          <a class="btn" href="https://github.com/liutingqiu/codefilm">查看源码 ↗</a>
+          <a class="btn" href="https://github.com/liutingqiu/html-to-mp4-engine">查看源码 ↗</a>
         </div>
       </div>
       <div>
@@ -171,7 +180,7 @@
     <section id="method">
       <div class="kicker">The method</div>
       <h2>不是剪辑，是代码。</h2>
-      <p class="sub">codefilm 是一个可移植的 agent skill：给它一条参考视频或一个主题，它先判断能不能用代码重建，再逐帧验证，不把“看起来像”当成“做对了”。</p>
+      <p class="sub">codefilm 是一个 HTML to MP4 引擎，也是一个可移植的 agent skill：给它一条参考视频或一个主题，它先判断能不能用代码重建，再逐帧验证，不把“看起来像”当成“做对了”。</p>
       <div class="steps">
         <div class="step"><b>01 / ROUTE</b><h3>先判断</h3><p>平面动效、UI、字、图表 → 代码。真人、实拍、复杂 3D → 生成或剪辑。不承诺做不到的事。</p></div>
         <div class="step"><b>02 / ANALYZE</b><h3>量出来</h3><p>切点、镜头长度、静止比、运动强度、调色板、语气。形容词全部换成数字。</p></div>
@@ -185,15 +194,15 @@
         <div>
           <div class="kicker">Open source</div>
           <h2>整套引擎，MIT。</h2>
-          <p>codefilm 的脚本、模板、动效参考、质检门，以及这支片子的全部源码，都在一个仓库里。你可以把它装进 Claude Code、Codex 或任何能读文件的 agent。</p>
+          <p>codefilm 是一个 HTML to MP4 引擎与 agent skill：脚本、模板、动效参考、质检门，以及这支片子的全部源码，都在一个仓库里。你可以把它装进 Claude Code、Codex 或任何能读文件的 agent。</p>
           <p style="font-size:13px;color:#8F8779">借鉴的 34 个项目、许可证与具体借鉴点，全部列在 ATTRIBUTIONS.md。</p>
         </div>
         <div class="links">
-          <a href="https://github.com/liutingqiu/codefilm">GitHub 仓库 <span>↗</span></a>
-          <a href="https://github.com/liutingqiu/codefilm/blob/main/skill/SKILL.md">codefilm SKILL.md <span>↗</span></a>
-          <a href="https://github.com/liutingqiu/codefilm/blob/main/promo/README.md">这支片子的制作笔记 <span>↗</span></a>
-          <a href="https://github.com/liutingqiu/codefilm/blob/main/docs/00-synthesis.md">34 个仓库的调研 <span>↗</span></a>
-          <a href="https://github.com/liutingqiu/codefilm/blob/main/ATTRIBUTIONS.md">借鉴与许可证 <span>↗</span></a>
+          <a href="https://github.com/liutingqiu/html-to-mp4-engine">GitHub 仓库 <span>↗</span></a>
+          <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/skill/SKILL.md">codefilm SKILL.md <span>↗</span></a>
+          <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/promo/README.md">这支片子的制作笔记 <span>↗</span></a>
+          <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/docs/00-synthesis.md">34 个仓库的调研 <span>↗</span></a>
+          <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/ATTRIBUTIONS.md">借鉴与许可证 <span>↗</span></a>
         </div>
       </div>
     </section>
@@ -202,7 +211,7 @@
   <footer>
     <div>拾光 / Shiguang 是为本开源项目虚构的产品与人设，不代表任何真实公司。<br>
       codefilm © 2026 liutingqiu · MIT</div>
-    <div><a href="https://github.com/liutingqiu/codefilm">GitHub</a> · <a href="https://github.com/liutingqiu/codefilm/blob/main/ATTRIBUTIONS.md">Attributions</a> · <a href="https://github.com/liutingqiu/codefilm/blob/main/LICENSE">License</a></div>
+    <div><a href="https://github.com/liutingqiu/html-to-mp4-engine">GitHub</a> · <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/ATTRIBUTIONS.md">Attributions</a> · <a href="https://github.com/liutingqiu/html-to-mp4-engine/blob/main/LICENSE">License</a></div>
   </footer>
 </div>
 

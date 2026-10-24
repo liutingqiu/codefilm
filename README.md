@@ -1,13 +1,18 @@
 # codefilm
 
-**Make videos by writing code.**
+**HTML to MP4, by writing code.** A deterministic code-video engine and agent skill for
+reference replication, original films, and frame-level QA.
 Reference in, editable code out, frame-checked film out.
 
 [![codefilm promo preview — 拾光](assets/preview.gif)](promo/out/shiguang-promo.mp4)
 
-[![ci](https://github.com/liutingqiu/codefilm/actions/workflows/ci.yml/badge.svg)](https://github.com/liutingqiu/codefilm/actions/workflows/ci.yml)
+[![ci](https://github.com/liutingqiu/html-to-mp4-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/liutingqiu/html-to-mp4-engine/actions/workflows/ci.yml)
 
 ▶ **[Watch the 32-second promo with sound](promo/out/shiguang-promo.mp4)** · 1920×1080 · 30 fps · 960 frames · all code
+· **[Live homepage](https://liutingqiu.github.io/html-to-mp4-engine/)**
+
+**HTML to MP4, deterministically.** One HTML file, one pure `render(t)`, headless Chrome →
+FFmpeg. Shutter blur, parallel workers, frame-level QA, and an agent skill around it.
 
 An open-source agent skill and a small deterministic video engine. It does two things:
 
