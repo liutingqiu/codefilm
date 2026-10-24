@@ -126,7 +126,7 @@ promo/                  the 32 s 拾光 brand film
   audio_build.py        numpy BGM + SFX + mix
   vo/                   narration MP3s
   out/                  final MP4 + contact sheet + render evidence
-docs/00-synthesis.md    the research behind the design (35 repos, 14 reusable mechanisms)
+docs/00-synthesis.md    the research behind the design (34 repos, 14 reusable mechanisms)
 index.html              the landing page for GitHub Pages (hero video)
 ATTRIBUTIONS.md         every referenced project, its license, and what was borrowed
 ```
@@ -154,7 +154,7 @@ python skill/scripts/install.py --target claude   # or --target agents, or --des
   gates, manifest compose, media verification.
 - **OpenMontage** (AGPL-3.0): route, five aspects, capability audit, sample-first — **process
   inspiration only, no code copied**.
-- Plus the rest of the 35-repo survey. See [ATTRIBUTIONS.md](ATTRIBUTIONS.md) for the full table.
+- Plus the rest of the 34-repo survey. See [ATTRIBUTIONS.md](ATTRIBUTIONS.md) for the full table.
 
 ---
 
