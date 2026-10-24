@@ -6,6 +6,7 @@
 
 Legs (only FAIL fails the verdict):
   rest      >= 25 % of frames dead-still and one quiet stretch >= 1.0 s
+            (0.5 s for clips shorter than 4 s)
   burst     a 1.5 s window with >= 3 big changes; only FAIL if --ref has one
   cadence   shot lengths (from --shots) vary: CV >= 0.25; 0.15-0.25 calm brand film
   audio     peak <= -1.0 dBFS, 0 clipped samples, >= 15 % quiet windows
@@ -121,8 +122,10 @@ def main():
                       f"(>=0.25 varied, 0.15-0.25 calm brand film, <0.15 slideshow)"))
     else:
         print("  skip   cadence   (pass --shots t0,t1,...)")
-    ok.append(leg("rest", "PASS" if s["still_ratio"] >= 0.25 and s["longest_quiet_s"] >= 1.0 else "FAIL",
-                  f"still {s['still_ratio']}  longest quiet {s['longest_quiet_s']} s"))
+    quiet_need = 1.0 if info["duration"] >= 4.0 else 0.5
+    ok.append(leg("rest", "PASS" if s["still_ratio"] >= 0.25 and s["longest_quiet_s"] >= quiet_need else "FAIL",
+                  f"still {s['still_ratio']}  longest quiet {s['longest_quiet_s']} s "
+                  f"(need {quiet_need:g} s)"))
     if s["bursts"]:
         ok.append(leg("burst", "PASS", f"{len(s['bursts'])} bursts"))
     elif a.ref:

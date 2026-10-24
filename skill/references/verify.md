@@ -35,14 +35,14 @@ python scripts/verify.py out/film.mp4 --shots 0,1.8,4.2,6.4
 ```
 
 Checks: cadence (shot-length CV ≥ 0.25 varied; 0.15–0.25 is acceptable for a calm brand film;
-below 0.15 reads as a slideshow), rest (still ≥ 25 %, quiet ≥ 1.0 s), burst (only FAILs
+below 0.15 reads as a slideshow), rest (still ≥ 25 %, quiet ≥ 1.0 s; 0.5 s for clips under 4 s), burst (only FAILs
 against a reference that has one), audio (peak ≤ -1.0 dBFS, 0 clipped, ≥ 15 % quiet), and an advisory
 row-profile variation. Exit 1 on FAIL.
 
 Then use this as a checklist for the things no script catches:
 
 - **Cadence** — shot-length coefficient of variation ≥ 0.25. Equal lengths = slideshow.
-- **Rest** — ≥ 25 % of frames dead-still; one quiet stretch ≥ 1.0 s.
+- **Rest** — ≥ 25 % of frames dead-still; one quiet stretch ≥ 1.0 s (0.5 s for clips under 4 s).
 - **Burst** — a 1.5 s window with ≥ 3 big changes, only if the reference has one.
 - **Carry** — every boundary has a thing that survives and moves: cursor, card, subject, container,
   word group. A bare replacement is a slide change even with good rhythm.

@@ -83,7 +83,14 @@
     const r = el.getBoundingClientRect();
     return [{id: 'think', text: 'THINK', x0: r.left, y0: r.top, x1: r.right, y1: r.bottom}];
   };
-  window.__motion = (t0, t1) => (t1 - t0 > 0 ? 900 : 0);
+  // Approximate on-screen px per frame at 24 fps: square growth ~12, text ~5,
+  // bar sweep 1000 px / 0.8 s ≈ 52. Used only for adaptive shutter sampling.
+  window.__motion = (t0, t1) => {
+    const mid = (t0 + t1) / 2;
+    if (mid < 0.98) return 16;
+    if (mid < 2.10) return 14;
+    return 52;
+  };
   window.__ready = Promise.resolve().then(() => {
     render(0);
     document.documentElement.dataset.ready = '1';

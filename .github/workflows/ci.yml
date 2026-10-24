@@ -38,6 +38,7 @@ jobs:
           python skill/scripts/check.py skill/examples/scene-demo/comp.html
           python skill/scripts/check.py skill/examples/looks-demo/comp.html
           python skill/scripts/check.py skill/examples/gsap-demo/comp.html --root skill
+          python skill/scripts/check.py skill/examples/think-big/comp.html
           python skill/scripts/check.py promo/comp.html
       - name: Film checks
         run: |
@@ -46,3 +47,4 @@ jobs:
           python skill/scripts/verify.py skill/examples/scene-demo/out.mp4
           python skill/scripts/verify.py skill/examples/looks-demo/out.mp4
           python skill/scripts/verify.py skill/examples/gsap-demo/out.mp4
+          python skill/scripts/verify.py skill/examples/think-big/out.mp4
