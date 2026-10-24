@@ -18,11 +18,14 @@ jobs:
           node-version: "22"
       - name: Compile Python
         run: |
-          python -m py_compile skill/scripts/*.py promo/vo.py promo/audio_build.py
+          python -m py_compile skill/scripts/*.py skill/tests/*.py promo/vo.py promo/audio_build.py
       - name: Motion library tests
         run: |
           node skill/tests/test_motion.js
           node skill/tests/test_library.js
+      - name: CLI tests
+        run: |
+          cd skill && python -m unittest discover -s tests -p "test_*.py"
       - name: Static composition checks
         run: |
           python skill/scripts/check.py skill/examples/demo/comp.html
@@ -30,3 +33,9 @@ jobs:
           python skill/scripts/check.py skill/examples/scene-demo/comp.html
           python skill/scripts/check.py skill/examples/looks-demo/comp.html
           python skill/scripts/check.py promo/comp.html
+      - name: Film checks
+        run: |
+          python skill/scripts/verify.py skill/examples/demo/out.mp4 --shots 0,1.6,3.0,4.8,7.0
+          python skill/scripts/verify.py skill/examples/motion-demo/out.mp4
+          python skill/scripts/verify.py skill/examples/scene-demo/out.mp4
+          python skill/scripts/verify.py skill/examples/looks-demo/out.mp4

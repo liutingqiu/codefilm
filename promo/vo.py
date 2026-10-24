@@ -6,6 +6,7 @@ from pathlib import Path
 
 import edge_tts
 
+HERE = Path(__file__).resolve().parent
 LINES = [
     ("s1", "脑子里，有一百个想法。"),
     ("s2", "它们散落在便签、聊天和文档里。"),
@@ -39,15 +40,17 @@ async def gen(text: str, out: Path):
 
 async def main():
     rows = []
-    Path("vo").mkdir(exist_ok=True)
+    vo_dir = HERE / "vo"
+    vo_dir.mkdir(exist_ok=True)
     for name, text in LINES:
-        p = Path("vo") / f"{name}.mp3"
+        p = vo_dir / f"{name}.mp3"
         if not p.exists() or p.stat().st_size < 1000:
             await gen(text, p)
         dur = audio_duration(p)
-        rows.append({"id": name, "text": text, "file": str(p), "duration": round(dur, 3)})
+        rows.append({"id": name, "text": text,
+                     "file": p.relative_to(HERE).as_posix(), "duration": round(dur, 3)})
         print(f"{name} {dur:.2f}s  {text}")
-    Path("vo.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+    (HERE / "vo.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
     print("total", round(sum(r["duration"] for r in rows), 2), "s")
 
 

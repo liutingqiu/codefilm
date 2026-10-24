@@ -5,6 +5,8 @@ Reference in, editable code out, frame-checked film out.
 
 [![codefilm promo preview — 拾光](assets/preview.gif)](promo/out/shiguang-promo.mp4)
 
+[![ci](https://github.com/liutingqiu/codefilm/actions/workflows/ci.yml/badge.svg)](https://github.com/liutingqiu/codefilm/actions/workflows/ci.yml)
+
 ▶ **[Watch the 32-second promo with sound](promo/out/shiguang-promo.mp4)** · 1920×1080 · 30 fps · 960 frames · all code
 
 An open-source agent skill and a small deterministic video engine. It does two things:
@@ -96,14 +98,15 @@ VO subtitles).
 
 ## Status
 
-This repository is the **P1 engine + P2 audio** slice of the plan, plus one finished film:
+This repository is the **P1 engine + P2 audio + P3 packaging** slice of the plan, plus one
+finished film:
 
 - **Done:** ingest, analyze (with optical flow), check, render (shutter/parallel/resume),
   frame_diff, probe (carry/framing/curves/reading), verify, TTS, audio synth, edit_plan (EDIT),
   gen_prompts (GEN), compose, taste, install; a motion library (36 moves), scene kit (7 builders),
   8 looks + 8 style recipes; demos for each; the 32 s 拾光 promo; GitHub Pages landing page prepared.
-- **Not done yet (P3):** provider API calls for GEN/EDIT (the prompt pack and cut manifest are
-  local), DSH marketplace packaging, broader platform QA.
+- **Leftovers (deliberately out of scope):** real provider API calls for GEN/EDIT (the prompt
+  pack and cut manifest are local), DSH marketplace packaging, broader platform QA.
 
 No releases, tags or npm packages have been published. The GitHub Pages homepage is prepared but
 not enabled; it waits for a human review.
@@ -119,7 +122,7 @@ skill/                  the portable agent skill (SKILL.md, scripts, templates, 
   library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks)
   styles/               8 style recipes (look + scene mix + avoid list)
   examples/             8 s original, 6 s motion, 9.4 s scene kit, 4 s looks, 2.6 s replication
-  tests/                Node tests for motion/looks/scenes/styles
+  tests/                Node tests for motion/looks/scenes/styles; CLI smoke tests
 promo/                  the 32 s 拾光 brand film
   comp.html             the composition (pure render(t), no external assets)
   vo.py                 Chinese narration via edge-tts

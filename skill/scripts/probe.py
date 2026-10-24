@@ -43,11 +43,26 @@ def _seek(page, t: float):
     page.evaluate(RAF_JS)
 
 
+def _is_cjk(ch: str) -> bool:
+    o = ord(ch)
+    return (0x3000 <= o <= 0x303F       # CJK punctuation
+            or 0x3400 <= o <= 0x4DBF    # extension A
+            or 0x4E00 <= o <= 0x9FFF    # unified ideographs
+            or 0xF900 <= o <= 0xFAFF)   # compatibility ideographs
+
+
 def analyze(comp: str | Path, root: str | Path | None = None, width: int = 1920,
             height: int = 1080, fps: float = 30.0) -> dict:
     comp = Path(comp).resolve()
+    if not comp.exists():
+        raise CFError(f"missing composition: {comp}")
     root = Path(root).resolve() if root else comp.parent
-    rel = urllib.parse.quote(comp.relative_to(root).as_posix())
+    if not root.is_dir():
+        raise CFError(f"--root is not a folder: {root}")
+    try:
+        rel = urllib.parse.quote(comp.relative_to(root).as_posix())
+    except ValueError:
+        raise CFError(f"composition must be inside --root ({root}): {comp}")
     httpd, base = serve(root)
     out = {"comp": str(comp), "duration": None, "fps": fps,
            "carry": None, "framing": None, "curves": None, "reading": None, "errors": []}
@@ -65,16 +80,26 @@ def analyze(comp: str | Path, root: str | Path | None = None, width: int = 1920,
                     pass
                 page.wait_for_timeout(120)
                 dur = page.evaluate(DUR_JS)
+                if not isinstance(dur, (int, float)) or dur <= 0:
+                    raise CFError("page does not expose a positive duration (window.__meta.dur)")
                 fps = float(page.evaluate(FPS_JS) or fps)
+                if fps <= 0:
+                    fps = 30.0
                 out["duration"] = round(float(dur), 3)
                 out["fps"] = fps
                 meta = page.evaluate("() => window.__meta || {}")
+                if not isinstance(meta, dict):
+                    meta = {}
 
                 carry = meta.get("carry") or []
                 if carry:
+                    if not isinstance(carry, list):
+                        raise CFError("window.__meta.carry must be an array")
                     events = []
                     for item in carry:
-                        t = float(item.get("t", 0)); sel = item.get("id", "")
+                        if not isinstance(item, dict):
+                            raise CFError("each carry item must be an object")
+                        t = float(item.get("t", 0)); sel = str(item.get("id", "") or "")
                         _seek(page, max(0, t - .03)); a = _rect(page, sel)
                         _seek(page, min(float(dur) - 1e-6, t + .03)); b = _rect(page, sel)
                         vis = lambda r: bool(r and r["opacity"] > .02 and r["display"] != "none" and r["visibility"] != "hidden")
@@ -88,8 +113,12 @@ def analyze(comp: str | Path, root: str | Path | None = None, width: int = 1920,
 
                 in_frame = meta.get("inFrame") or {}
                 if in_frame:
+                    if not isinstance(in_frame, dict):
+                        raise CFError("window.__meta.inFrame must be an object")
                     frames = {}
                     for sel, win in in_frame.items():
+                        if not isinstance(win, (list, tuple)) or len(win) < 2:
+                            raise CFError(f"inFrame[{sel!r}] must be [start, end, ('whole')]")
                         t0, t1 = float(win[0]), float(win[1])
                         whole = len(win) > 2 and win[2] == "whole"
                         bad = []
@@ -118,31 +147,43 @@ def analyze(comp: str | Path, root: str | Path | None = None, width: int = 1920,
                     out["curves"] = {"peak": round(peak, 1), "at": round(at, 2), "fps": fps}
 
                 if page.evaluate("() => typeof window.TEXTS === 'function'"):
-                    seen = {}
+                    # One entry per contiguous appearance of a text id. If an id
+                    # swaps copy (e.g. a subtitle line), each line is measured
+                    # separately instead of only the last one surviving.
+                    segments: dict[str, list[dict]] = {}
                     step = .1
                     n = int(float(dur) / step) + 1
                     for k in range(n):
                         t = k * step
                         _seek(page, t)
                         items = page.evaluate("() => window.TEXTS()") or []
+                        if not isinstance(items, list):
+                            continue
                         for it in items:
-                            key = str(it.get("id", it.get("text", "")))
-                            text = str(it.get("text", ""))
-                            rec = seen.get(key)
-                            if not rec or rec["text"] != text:
-                                seen[key] = {"text": text, "first": t, "last": t}
+                            if not isinstance(it, dict):
+                                continue
+                            text = str(it.get("text") or "")
+                            if not text:
+                                continue
+                            key = str(it.get("id") or text)
+                            segs = segments.setdefault(key, [])
+                            if segs and segs[-1]["text"] == text and abs(segs[-1]["last"] - (t - step)) < 1e-6:
+                                segs[-1]["last"] = t
                             else:
-                                rec["last"] = t
+                                segs.append({"text": text, "first": t, "last": t})
                     bad = []
-                    for key, rec in seen.items():
-                        cjk = sum(1 for ch in rec["text"] if "一" <= ch <= "鿿")
-                        other = sum(1 for ch in rec["text"] if not ch.isspace() and not ("一" <= ch <= "鿿"))
-                        need = 1.5 + cjk / 4.5 + other / 15
-                        got = rec["last"] - rec["first"] + step
-                        if got + 1e-6 < need:
-                            bad.append({"id": key, "text": rec["text"], "need": round(need, 2),
-                                        "got": round(got, 2)})
-                    out["reading"] = {"checked": len(seen), "bad": bad}
+                    checked = 0
+                    for key, segs in segments.items():
+                        for seg in segs:
+                            checked += 1
+                            cjk = sum(1 for ch in seg["text"] if _is_cjk(ch))
+                            other = sum(1 for ch in seg["text"] if not ch.isspace() and not _is_cjk(ch))
+                            need = 1.5 + cjk / 4.5 + other / 15
+                            got = seg["last"] - seg["first"] + step
+                            if got + 1e-6 < need:
+                                bad.append({"id": key, "text": seg["text"], "first": round(seg["first"], 2),
+                                            "need": round(need, 2), "got": round(got, 2)})
+                    out["reading"] = {"checked": checked, "bad": bad}
             finally:
                 browser.close()
     finally:

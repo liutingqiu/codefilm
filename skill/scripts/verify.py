@@ -40,27 +40,24 @@ def audio_stats(video: Path) -> dict | None:
     try:
         run(["ffmpeg", "-v", "error", "-y", "-i", str(video), "-vn",
              "-ac", "2", "-ar", "48000", "-c:a", "pcm_s16le", str(wav)])
-        w = wave.open(str(wav), "rb")
-        n, sw, ch, sr = w.getnframes(), w.getsampwidth(), w.getnchannels(), w.getframerate()
-        raw = w.readframes(n)
-        w.close()
+        with wave.open(str(wav), "rb") as w:
+            n, sw, ch, sr = w.getnframes(), w.getsampwidth(), w.getnchannels(), w.getframerate()
+            raw = w.readframes(n)
         if sw != 2:
             return None
         a = array("h")
         a.frombytes(raw)
-        if ch == 2:
-            left = a[0::2]
-        else:
-            left = a
-        if not left:
+        if not a:
             return None
-        peak = max(abs(x) for x in left) / 32767.0
-        clipped = sum(1 for x in left if abs(x) >= 32767)
+        ch = max(1, ch)
+        peak = max(abs(x) for x in a) / 32767.0
+        clipped = sum(1 for x in a if abs(x) >= 32767)
+        frames = len(a) // ch
         win = max(1, sr // 12)
         quiet = 0
         total = 0
-        for i in range(0, len(left) - win + 1, win):
-            seg = left[i:i + win]
+        for i in range(0, frames - win + 1, win):
+            seg = a[i * ch:(i + win) * ch]
             rms = (sum(x * x for x in seg) / len(seg)) ** 0.5 / 32767.0
             total += 1
             if rms < 0.01:  # -40 dBFS

@@ -13,7 +13,7 @@ python skill/scripts/verify.py out/shiguang-promo.mp4 --comp comp.html \
 | rest | **PASS** — 静止比 0.771；最长静默 4.67 s |
 | burst | **WARN** — 无 burst；本片是平静叙事，不追求快剪 |
 | not-flat | **PASS** — 行剖面变化 1.34 |
-| audio | **PASS** — 峰值 −1.2 dBFS；0 clipped；静音窗占比 0.362 |
+| audio | **PASS** — 峰值 −1.2 dBFS；0 clipped；静音窗占比 0.359 |
 | carry | **PASS** — 2 个声明的载具（便签卡）在切点前后都可见，score 1.0 |
 | framing | **PASS** — 品牌名与计划卡都在声明窗口内 |
 | curves | **PASS** — 峰值 900 px/帧 @ 7.8 s，快门 180° 渲染 |

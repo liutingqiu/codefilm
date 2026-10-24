@@ -2,49 +2,49 @@
  {
   "id": "s1",
   "text": "脑子里，有一百个想法。",
-  "file": "vo\\s1.mp3",
+  "file": "vo/s1.mp3",
   "duration": 2.71
  },
  {
   "id": "s2",
   "text": "它们散落在便签、聊天和文档里。",
-  "file": "vo\\s2.mp3",
+  "file": "vo/s2.mp3",
   "duration": 3.53
  },
  {
   "id": "s3",
   "text": "拾光，把它们收成一束光。",
-  "file": "vo\\s3.mp3",
+  "file": "vo/s3.mp3",
   "duration": 2.93
  },
  {
   "id": "s4",
   "text": "先记下来。一句话，一张图，都可以。",
-  "file": "vo\\s4.mp3",
+  "file": "vo/s4.mp3",
   "duration": 4.66
  },
  {
   "id": "s5",
   "text": "拾光会连起相关的内容，理出下一步。",
-  "file": "vo\\s5.mp3",
+  "file": "vo/s5.mp3",
   "duration": 4.13
  },
  {
   "id": "s6",
   "text": "然后，把它做出来。",
-  "file": "vo\\s6.mp3",
+  "file": "vo/s6.mp3",
   "duration": 2.35
  },
  {
   "id": "s7",
   "text": "从散落，到清晰。",
-  "file": "vo\\s7.mp3",
+  "file": "vo/s7.mp3",
   "duration": 2.42
  },
  {
   "id": "s8",
   "text": "拾光，把想法变成下一步。",
-  "file": "vo\\s8.mp3",
+  "file": "vo/s8.mp3",
   "duration": 3.07
  }
 ]

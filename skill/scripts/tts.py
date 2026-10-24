@@ -37,6 +37,13 @@ def audio_duration(path: Path) -> float:
     return int(m.group(1)) * 3600 + int(m.group(2)) * 60 + float(m.group(3))
 
 
+def _line_id(line: dict, i: int) -> str:
+    sid = str(line.get("id", "")).strip()
+    if not re.fullmatch(r"[A-Za-z0-9._-]{1,80}", sid):
+        die(f"line {i}: id must be 1-80 chars of letters, digits, dot, dash or underscore")
+    return sid
+
+
 async def gen(text: str, out: Path, voice: str, rate: str, pitch: str, volume: str):
     import edge_tts
     c = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, volume=volume)
@@ -50,10 +57,16 @@ async def gen(text: str, out: Path, voice: str, rate: str, pitch: str, volume: s
 async def run(lines: list[dict], out: Path, voice: str, rate: str, pitch: str, volume: str,
               starts: dict | None, gap: float, lead: float, force: bool):
     rows = []
+    seen = set()
     t = lead
     for line in lines:
-        sid = str(line["id"])
-        text = str(line["text"])
+        sid = _line_id(line, len(rows))
+        if sid in seen:
+            die(f"duplicate line id: {sid}")
+        seen.add(sid)
+        text = str(line.get("text", "")).strip()
+        if not text:
+            die(f"line {len(rows)} ({sid}): text is empty")
         v = line.get("voice") or voice
         r = line.get("rate") or rate
         p = line.get("pitch") or pitch
@@ -63,7 +76,7 @@ async def run(lines: list[dict], out: Path, voice: str, rate: str, pitch: str, v
             await gen(text, path, v, r, p, vol)
         dur = audio_duration(path)
         start = float(starts[sid]) if starts and sid in starts else round(t, 3)
-        rows.append({"id": sid, "text": text, "file": str(path),
+        rows.append({"id": sid, "text": text, "file": path.relative_to(out).as_posix(),
                      "duration": round(dur, 3), "start": start})
         t = start + dur + gap
     return rows
@@ -89,19 +102,39 @@ def main():
         die(f"cannot read lines JSON: {e}")
     if not isinstance(lines, list) or not lines:
         die("lines JSON must be a non-empty array")
+    for i, line in enumerate(lines):
+        if not isinstance(line, dict):
+            die(f"line {i} must be an object")
+        _line_id(line, i)
     starts = None
     if a.starts:
-        starts = json.loads(Path(a.starts).read_text(encoding="utf-8"))
+        try:
+            starts = json.loads(Path(a.starts).read_text(encoding="utf-8"))
+        except Exception as e:
+            die(f"cannot read starts JSON: {e}")
+        if not isinstance(starts, dict):
+            die("starts JSON must be an object mapping id to seconds")
+        for k, v in starts.items():
+            try:
+                float(v)
+            except (TypeError, ValueError):
+                die(f"starts[{k!r}] must be a number")
     out = ensure_dir(a.out)
     if a.dry_run:
         t = a.lead
-        for line in lines:
+        seen = set()
+        for i, line in enumerate(lines):
+            sid = _line_id(line, i)
+            if sid in seen:
+                die(f"duplicate line id: {sid}")
+            seen.add(sid)
             dur = 0.0
-            p = out / f"{line['id']}.mp3"
+            p = out / f"{sid}.mp3"
             if p.exists():
                 dur = audio_duration(p)
-            print(f"{line['id']}: start {t:.2f}s (duration {dur:.2f}s)  {line['text']}")
-            t += dur + a.gap
+            start = float(starts[sid]) if starts and sid in starts else t
+            print(f"{sid}: start {start:.2f}s (duration {dur:.2f}s)  {line.get('text', '')}")
+            t = start + dur + a.gap
         return
     try:
         rows = asyncio.run(run(lines, out, a.voice, a.rate, a.pitch, a.volume,

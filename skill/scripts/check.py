@@ -29,6 +29,7 @@ SCRIPT_ALLOW = [
 ]
 HOST_ALLOW = {"cdnjs.cloudflare.com", "cdn.jsdelivr.net", "unpkg.com",
               "fonts.googleapis.com", "fonts.gstatic.com"}
+WIN_PATH = re.compile(r"(?i)(?<![A-Za-z])[A-Z]:[" + re.escape("\\") + r"/]")
 
 
 def static_check(path: Path, allow_raster: bool) -> tuple[list[str], list[str]]:
@@ -59,7 +60,12 @@ def static_check(path: Path, allow_raster: bool) -> tuple[list[str], list[str]]:
                       (r"performance\.now\s*\(", "performance.now()")]:
         if re.search(pat, code):
             warn.append(f"{name} found: make it seeded/precomputed so seek(t) is pure")
-    if re.search(r"/(Users|home)/[A-Za-z0-9_.-]+/", s):
+    for pat, name in [(r"@keyframes\b", "@keyframes"), (r"\banimation\s*:", "CSS animation")]:
+        if re.search(pat, code, flags=re.I):
+            warn.append(f"{name} found: drive visuals from seek(t), not wall-clock CSS animation")
+    if (re.search(r"/(Users|home)/[A-Za-z0-9_.-]+/", s)
+            or WIN_PATH.search(s)
+            or "file:///" in s):
         err.append("absolute personal path found")
     return err, warn
 
@@ -109,7 +115,7 @@ def runtime_check(browser, path: Path, root: Path, width: int, height: int,
             if stats["seam_last_frame"] > seam_step:
                 err.append(f"loop jump: last frame != frame(0) (diff {stats['seam_last_frame']} > {seam_step})")
         else:
-            warn.append("film is not declared as looping (window.__meta.loop=true); seam checks skipped")
+            warn.append("film is not declared as looping; set window.__meta.loop=true to enable seam checks")
         if stats["determinism"] > 0.5:
             err.append(f"seek is not deterministic (diff {stats['determinism']})")
         if stats["start_vs_mid"] < 0.5:
@@ -145,6 +151,14 @@ def main():
     if not path.exists():
         die(f"missing {path}")
     root = Path(a.root).resolve() if a.root else path.parent
+    if not root.is_dir():
+        die(f"--root is not a folder: {root}")
+    try:
+        path.relative_to(root)
+    except ValueError:
+        die(f"composition must be inside --root ({root}): {path}")
+    if a.width <= 0 or a.height <= 0 or a.fps <= 0:
+        die("--width, --height and --fps must be positive")
     err, warn = static_check(path, a.allow_raster)
     stats = {}
     if a.runtime and not err:

@@ -32,7 +32,7 @@ python scripts/analyze.py work/myfilm
 Then write `STYLE.md`, `SPEC.md`, `beats.json`, copy `templates/comp.html`, implement
 `window.__seek(t)`, and run check → render → frame_diff.
 
-## Status (P1 + P2 audio, 2026-10-24)
+## Status (P1 + P2 audio + P3 packaging, 2026-10-24)
 
 Working and tested on this machine:
 
@@ -41,11 +41,11 @@ Working and tested on this machine:
 | `ingest.py` | local file + yt-dlp; frames, scene cuts, contact sheet, audio, optional ASR (faster-whisper) |
 | `analyze.py` | energy map, still/low ratios, cuts, bursts, longest quiet, palette; optional optical flow |
 | `check.py` | static + runtime contract, deterministic seek, loop seam (when declared), console/network |
-| `render.py` | Playwright capture; **shutter blur, parallel workers, resume**; ffmpeg encode, `render.json` |
+| `render.py` | Playwright capture; **shutter blur, parallel workers, fingerprint-checked resume**; ffmpeg encode, `render.json` |
 | `frame_diff.py` | side-by-side pairs, mean-abs-diff, worst-5, sheet |
 | `probe.py` | carry / framing / curves / reading at the element level |
 | `verify.py` | rhythm/rest/burst/audio + probe legs; exit 1 on a failed leg |
-| `tts.py` | edge-tts narration, per-line timings, `vo.json` |
+| `tts.py` | edge-tts narration, per-line timings, portable `vo.json` |
 | `audio.py` | numpy BGM + SFX + VO mix, ducking, `mix.wav` |
 | `taste.py` | persist user corrections as rules |
 | `compose.py` | manifest → film; shots, voice delays, SRT burn, adaptive subtitle style |
@@ -53,15 +53,18 @@ Working and tested on this machine:
 | `library/motion.js` | 36 deterministic moves: entrances, exits, seams, camera, contact, type |
 | `library/scenes.js` | reusable title/cards/lines/chat/ledger/chart/end builders |
 | `library/looks.js` | 8 look token sets |
+| `styles/index.json` | 8 style recipes (look + scene mix + avoid list) |
 | `tests/test_motion.js` | Node tests for the motion library (12 groups) |
+| `tests/test_library.js` | Node checks for 8 looks / 7 builders / 8 recipes |
+| `tests/test_scripts.py` | CLI path/validation smoke tests (7) |
 | demos | 8 s original, 6 s motion library, 9.4 s scene kit, 4 s looks, 2.6 s replication |
 
 Verified: `check.py` PASS; re-render determinism PSNR `inf`; 240 frames in ~37 s; shutter
 180° + 4 workers on 960 frames in ~204 s; `verify.py --comp` PASS on the promo (carry 1.0,
 framing PASS, curves PASS with shutter).
 
-Not yet (P3): provider API calls for GEN/EDIT (the prompt pack and cut manifest are local),
-DSH marketplace packaging, platform-level QA. CI lives in the project repo
+Leftovers (deliberately out of scope): provider API calls for GEN/EDIT (the prompt pack and cut
+manifest are local), DSH marketplace packaging, platform-level QA. CI lives in the project repo
 (`.github/workflows/ci.yml`). See the project's [`docs/00-synthesis.md`](../docs/00-synthesis.md).
 
 ## Requirements

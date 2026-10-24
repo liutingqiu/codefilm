@@ -33,7 +33,17 @@ def load(path: str) -> list[dict]:
 
 
 def save(path: str, rows: list[dict]):
-    Path(path).write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def _value(v: str):
+    """Keep numbers/bools typed so rules stay checkable."""
+    try:
+        return json.loads(v)
+    except (json.JSONDecodeError, TypeError):
+        return v
 
 
 def main():
@@ -66,7 +76,7 @@ def main():
             if "=" not in a.set_value:
                 sys.exit("--set needs key=value")
             k, v = a.set_value.split("=", 1)
-            rule["set"] = {k: v}
+            rule["set"] = {k: _value(v)}
         if a.ban_sfx:
             rule["ban_sfx"] = a.ban_sfx
         rows.append(rule)

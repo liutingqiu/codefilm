@@ -12,8 +12,6 @@ Pure stdlib. Optical flow needs opencv-python; without it the flow field stays n
 from __future__ import annotations
 
 import argparse
-import math
-import subprocess
 import sys
 from pathlib import Path
 

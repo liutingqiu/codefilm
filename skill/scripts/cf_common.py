@@ -5,7 +5,6 @@ Stdlib only. ffmpeg is required; ffprobe is optional (fallback parses `ffmpeg -i
 from __future__ import annotations
 
 import json
-import os
 import re
 import shutil
 import subprocess

@@ -27,7 +27,6 @@ import functools
 import http.server
 import io
 import multiprocessing as mp
-import os
 import socketserver
 import sys
 import threading
@@ -36,7 +35,7 @@ import urllib.parse
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from cf_common import CFError, die, ensure_dir, need, run, write_json  # noqa: E402
+from cf_common import CFError, die, ensure_dir, need, read_json, run, write_json  # noqa: E402
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
@@ -118,21 +117,26 @@ def _probe_page(html: Path, root: Path, base: str, width: int, height: int,
     with playwright()() as p:
         browser = launch(p)
         try:
-            page = browser.new_page(viewport={"width": width, "height": height},
-                                    device_scale_factor=scale)
-            page.goto(f"{base}/{rel}?external=1", wait_until="load")
-            page.wait_for_function(READY_JS, timeout=timeout)
             try:
-                page.evaluate("() => document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true")
-            except Exception:
-                pass
-            page.wait_for_timeout(120)
-            dur = page.evaluate(DUR_JS)
-            fps = float(page.evaluate(FPS_JS) or 30)
-            motion = bool(page.evaluate(HAS_MOTION_JS))
-            if not isinstance(dur, (int, float)) or dur <= 0:
-                die("page does not expose duration: set window.__meta.dur or pass --duration")
-            return float(dur), fps, motion
+                page = browser.new_page(viewport={"width": width, "height": height},
+                                        device_scale_factor=scale)
+                page.goto(f"{base}/{rel}?external=1", wait_until="load")
+                page.wait_for_function(READY_JS, timeout=timeout)
+                try:
+                    page.evaluate("() => document.fonts && document.fonts.ready ? document.fonts.ready.then(() => true) : true")
+                except Exception:
+                    pass
+                page.wait_for_timeout(120)
+                dur = page.evaluate(DUR_JS)
+                fps = float(page.evaluate(FPS_JS) or 30)
+                motion = bool(page.evaluate(HAS_MOTION_JS))
+                if not isinstance(dur, (int, float)) or dur <= 0:
+                    die("page does not expose duration: set window.__meta.dur or pass --duration")
+                return float(dur), fps, motion
+            except SystemExit:
+                raise
+            except Exception as e:
+                die(f"page did not become ready: {e}")
         finally:
             browser.close()
 
@@ -200,7 +204,9 @@ def _frame(page, t: float, path: Path, job: dict) -> tuple[int, int, int]:
     S = max(2, S)
     times = [min(max(t + open_s * ((k + 0.5) / S - 0.5), 0.0), job["dur"] - 1e-6) for k in range(S)]
     pngs = [_grab(page, tk) for tk in times]
-    if pngs[0] == pngs[-1]:
+    # A frame is still only when every capture is identical. Comparing just the
+    # first and last capture would mistake an out-and-back move for a hold.
+    if all(p == pngs[0] for p in pngs[1:]):
         path.write_bytes(pngs[0])
         return len(pngs), 0, 1
     data, cut = _integrate(pngs)
@@ -281,12 +287,26 @@ def main():
     html = Path(a.html).resolve()
     if not html.exists():
         die(f"missing {html}")
+    if a.width <= 0 or a.height <= 0:
+        die("--width and --height must be positive")
+    if a.scale <= 0:
+        die("--scale must be positive")
+    if a.start < 0:
+        die("--start must be >= 0")
     root = Path(a.root).resolve() if a.root else html.parent
+    if not root.is_dir():
+        die(f"--root is not a folder: {root}")
+    try:
+        rel_path = html.relative_to(root)
+    except ValueError:
+        die(f"composition must be inside --root ({root}): {html}")
+    rel = urllib.parse.quote(rel_path.as_posix())
     if a.audio and not Path(a.audio).exists():
         die(f"missing audio {a.audio}")
     out = Path(a.out).resolve()
     ensure_dir(out.parent)
     frames_dir = ensure_dir(out.parent / "_frames")
+    px_w, px_h = int(round(a.width * a.scale)), int(round(a.height * a.scale))
 
     if a.shutter > 0:
         try:
@@ -300,7 +320,6 @@ def main():
     errors: list[str] = []
     t0 = time.time()
     try:
-        rel = urllib.parse.quote(html.relative_to(root).as_posix())
         page_dur, fps, has_motion = _probe_page(html, root, base, a.width, a.height, a.scale, a.timeout)
         fps = float(a.fps or fps)
         end = a.end if a.end > 0 else (a.start + a.duration if a.duration > 0 else page_dur)
@@ -309,20 +328,49 @@ def main():
         if n <= 0:
             die(f"nothing to render (start={a.start}, end={end}, fps={fps})")
         workers = max(1, min(int(a.workers), n))
-        if not a.resume:
-            for old in frames_dir.glob("*.png"):
-                old.unlink()
-        else:
+        adaptive = a.shutter > 0 and has_motion
+
+        # --resume is only safe when the frames on disk came from the same
+        # composition and render settings. Key it to the file so two comps
+        # that share an output folder cannot silently mix frames.
+        st = html.stat()
+        fingerprint = {
+            "comp": str(html), "comp_size": st.st_size, "comp_mtime_ns": st.st_mtime_ns,
+            "width": a.width, "height": a.height, "scale": a.scale,
+            "fps": fps, "start": a.start, "shutter": a.shutter,
+            "samples": max(2, a.samples), "smin": max(2, a.samples_min),
+            "smax": max(2, a.samples_max), "gap": max(1.0, a.gap),
+            "adaptive": adaptive,
+        }
+        fp_path = frames_dir / ".codefilm-frames.json"
+        if a.resume:
+            old_fp = None
+            if fp_path.exists():
+                try:
+                    old_fp = read_json(fp_path)
+                except Exception:
+                    old_fp = None
+            if old_fp != fingerprint:
+                if any(frames_dir.glob("*.png")):
+                    print("codefilm: --resume ignored: frames do not match this render; "
+                          "clearing them", file=sys.stderr)
+                for old in frames_dir.glob("*.png"):
+                    old.unlink()
             for old in frames_dir.glob("*.png"):
                 try:
                     if int(old.stem) >= n:
                         old.unlink()
                 except ValueError:
                     old.unlink()
-        adaptive = a.shutter > 0 and has_motion
+        else:
+            for old in frames_dir.glob("*.png"):
+                old.unlink()
+            if fp_path.exists():
+                fp_path.unlink()
+        write_json(fp_path, fingerprint)
         how = "no shutter" if a.shutter <= 0 else (
             f"shutter {a.shutter:g}°, " + ("adaptive samples" if adaptive else f"{a.samples} samples"))
-        print(f"{n} frames · {fps:g} fps · {a.width}x{a.height} @{a.scale:g}x · "
+        print(f"{n} frames · {fps:g} fps · {px_w}x{px_h} ({a.width}x{a.height} @{a.scale:g}x) · "
               f"{a.start:.2f}–{end:.2f}s · {workers} worker(s) · {how}", flush=True)
 
         job = dict(html=str(html), root=str(root), base=base, rel=rel, width=a.width, height=a.height,
@@ -351,12 +399,18 @@ def main():
     cmd += ["-c:v", "libx264", "-preset", "medium", "-crf", str(a.crf),
             "-pix_fmt", "yuv420p", "-profile:v", "high", "-movflags", "+faststart"]
     if a.audio:
-        cmd += ["-c:a", "aac", "-b:a", "192k", "-shortest"]
+        # Pad short audio with silence, then cut to the picture length. `-shortest`
+        # would truncate the film when the audio track is shorter than the video.
+        cmd += ["-c:a", "aac", "-b:a", "192k", "-af", "apad", "-t", f"{n / fps:.6f}"]
     cmd += [str(out)]
     run(cmd)
     if not a.keep_frames:
         for f in frames_dir.glob("*.png"):
             f.unlink()
+        try:
+            (frames_dir / ".codefilm-frames.json").unlink()
+        except OSError:
+            pass
         try:
             frames_dir.rmdir()
         except OSError:
@@ -365,7 +419,8 @@ def main():
     caps = sum(r["captures"] for r in results)
     still = sum(r["still"] for r in results)
     cuts = sum(r["cuts"] for r in results)
-    meta = {"comp": str(html), "out": str(out), "fps": fps, "size": [a.width, a.height],
+    meta = {"comp": str(html), "out": str(out), "fps": fps,
+            "size": [px_w, px_h], "css_size": [a.width, a.height],
             "scale": a.scale, "frames": n, "duration": round(n / fps, 3), "seconds": secs,
             "audio": str(a.audio) if a.audio else None, "workers": workers,
             "shutter": a.shutter if a.shutter > 0 else 0,

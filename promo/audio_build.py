@@ -15,6 +15,7 @@ import numpy as np
 
 SR = 44100
 DUR = 32.0
+HERE = Path(__file__).resolve().parent
 rng = np.random.default_rng(7)
 
 # VO schedule (seconds)
@@ -195,18 +196,32 @@ def build_sfx() -> np.ndarray:
 
 
 def load_vo() -> tuple[np.ndarray, dict]:
-    meta = json.loads(Path("vo.json").read_text(encoding="utf-8"))
+    meta = json.loads((HERE / "vo.json").read_text(encoding="utf-8"))
+    if not isinstance(meta, list):
+        raise SystemExit("promo: vo.json must be an array")
     n = int(SR * (DUR + 1))
     vo = np.zeros((2, n))
     used = {}
-    for row in meta:
-        sid = row["id"]
+    for i, row in enumerate(meta):
+        sid = row.get("id")
+        if sid not in STARTS:
+            raise SystemExit(f"promo: vo.json line {i}: unknown id {sid!r}")
         start = STARTS[sid]
-        r = subprocess.run(["ffmpeg", "-v", "error", "-i", row["file"], "-f", "f32le",
+        # Accept both POSIX and old Windows-style relative paths.
+        p = Path(str(row.get("file", "")).replace("\\", "/"))
+        if not p.is_absolute():
+            p = HERE / p
+        if not p.exists():
+            raise SystemExit(f"promo: missing VO file: {p}")
+        r = subprocess.run(["ffmpeg", "-v", "error", "-i", str(p), "-f", "f32le",
                             "-ac", "1", "-ar", str(SR), "-"], capture_output=True)
+        if r.returncode != 0 or not r.stdout:
+            detail = (r.stderr or b"").decode("utf-8", "replace")[-500:]
+            raise SystemExit(f"promo: cannot decode VO file: {p}\n{detail}")
         sig = np.frombuffer(r.stdout, dtype=np.float32).astype(np.float32)
         add(vo, start, sig, 1.0, 0.5)
-        used[sid] = {"start": start, "duration": round(len(sig) / SR, 3), "text": row["text"]}
+        used[sid] = {"start": start, "duration": round(len(sig) / SR, 3),
+                     "text": row.get("text", "")}
     return vo, used
 
 
@@ -238,18 +253,19 @@ def write_wav(path: str, stereo: np.ndarray):
 
 
 def main():
-    Path("audio").mkdir(exist_ok=True)
+    audio_dir = HERE / "audio"
+    audio_dir.mkdir(exist_ok=True)
     vo, used = load_vo()
     bgm = build_bgm()
     sfx = build_sfx()
     bgm *= duck_env(used)[None, :]
     mix = vo * 1.0 + bgm * 0.9 + sfx * 0.85
-    write_wav("audio/vo.wav", vo)
-    write_wav("audio/bgm.wav", bgm)
-    write_wav("audio/sfx.wav", sfx)
-    write_wav("audio/mix.wav", mix)
-    Path("timing.json").write_text(json.dumps({"duration": DUR, "vo": used}, ensure_ascii=False, indent=1),
-                                   encoding="utf-8")
+    write_wav(str(audio_dir / "vo.wav"), vo)
+    write_wav(str(audio_dir / "bgm.wav"), bgm)
+    write_wav(str(audio_dir / "sfx.wav"), sfx)
+    write_wav(str(audio_dir / "mix.wav"), mix)
+    (HERE / "timing.json").write_text(
+        json.dumps({"duration": DUR, "vo": used}, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"mix: {mix.shape[1]/SR:.2f}s  peak {np.max(np.abs(mix)):.3f}")
     for sid, v in used.items():
         print(f"  {sid} {v['start']:.2f}s + {v['duration']:.2f}s  {v['text']}")

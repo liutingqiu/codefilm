@@ -152,13 +152,27 @@ def build_sfx(events: list[dict], duration: float) -> np.ndarray:
 def load_vo(vo_path: Path, duration: float) -> np.ndarray:
     n = int(SR*(duration+1)); buf = np.zeros((2, n))
     rows = json.loads(vo_path.read_text(encoding="utf-8"))
-    for row in rows:
-        p = Path(row["file"])
+    if not isinstance(rows, list):
+        die(f"vo.json must be an array: {vo_path}")
+    base = vo_path.resolve().parent
+    for i, row in enumerate(rows):
+        if not isinstance(row, dict) or not row.get("file"):
+            die(f"vo line {i}: missing file")
+        # Accept both POSIX and old Windows-style relative paths.
+        p = Path(str(row["file"]).replace("\\", "/"))
+        if not p.is_absolute():
+            candidate = (base / p).resolve()
+            # tts.py writes paths relative to the vo.json folder; older files
+            # were relative to the working directory. Accept both.
+            p = candidate if candidate.exists() or not p.exists() else p.resolve()
         if not p.exists():
             die(f"VO file missing: {p}")
         r = subprocess.run(["ffmpeg", "-v", "error", "-i", str(p), "-f", "f32le",
                             "-ac", "1", "-ar", str(SR), "-"], capture_output=True)
-        sig = np.frombuffer(r.stdout or b"", dtype=np.float32)
+        if r.returncode != 0 or not r.stdout:
+            detail = (r.stderr or b"").decode("utf-8", "replace")[-500:]
+            die(f"cannot decode VO file: {p}\n{detail}")
+        sig = np.frombuffer(r.stdout, dtype=np.float32)
         add(buf, float(row.get("start", 0)), sig.astype(np.float32), 1.0, .5)
     return buf
 
@@ -167,7 +181,6 @@ def duck_env(vo: np.ndarray, depth: float = .32, fade: float = .3) -> np.ndarray
     n = vo.shape[1]
     env = np.ones(n, np.float32)
     active = np.abs(vo).mean(axis=0) > 1e-4
-    f = int(fade*SR)
     # smooth the activity into a ducking envelope
     a = active.astype(np.float32)
     k = max(1, int(.15*SR))
@@ -200,14 +213,41 @@ def main():
     ap.add_argument("--no-sfx", action="store_true")
     a = ap.parse_args()
     vo_path = Path(a.vo) if a.vo else None
+    if vo_path and not vo_path.exists():
+        die(f"vo.json not found: {vo_path}")
     rows = json.loads(vo_path.read_text(encoding="utf-8")) if vo_path else []
+    if vo_path and not isinstance(rows, list):
+        die(f"vo.json must be an array: {vo_path}")
+    for i, row in enumerate(rows):
+        if not isinstance(row, dict):
+            die(f"vo line {i} must be an object")
+        try:
+            float(row.get("start", 0))
+            float(row.get("duration", 0))
+        except (TypeError, ValueError):
+            die(f"vo line {i}: start/duration must be numbers")
     duration = a.duration or (max((float(r.get("start", 0)) + float(r.get("duration", 0)) for r in rows), default=0) + 1.0)
     if duration <= 0:
         die("give --duration or a vo.json with timings")
+    if a.bpm <= 0:
+        die("--bpm must be positive")
+    events = json.loads(Path(a.events).read_text(encoding="utf-8")) if a.events else []
+    if not isinstance(events, list):
+        die("events JSON must be an array")
+    for i, ev in enumerate(events):
+        if not isinstance(ev, dict):
+            die(f"event {i} must be an object")
+        if ev.get("kind", "whoosh") not in SFX:
+            die(f"event {i}: unknown kind {ev.get('kind')!r} (use {', '.join(sorted(SFX))})")
+        for key in ("t", "gain", "pan", "dur", "amp"):
+            if key in ev:
+                try:
+                    float(ev[key])
+                except (TypeError, ValueError):
+                    die(f"event {i}: {key} must be a number")
     out = Path(a.out); ensure_dir(out.parent)
     vo = load_vo(vo_path, duration) if vo_path else np.zeros((2, int(SR*(duration+1))))
     bgm = build_bgm(duration, a.bpm) if not a.no_bgm else np.zeros((2, int(SR*(duration+1))))
-    events = json.loads(Path(a.events).read_text(encoding="utf-8")) if a.events else []
     sfx = build_sfx(events, duration) if not a.no_sfx else np.zeros((2, int(SR*(duration+1))))
     bgm *= duck_env(vo)[None, :]
     mix = vo*float(a.vo_gain) + bgm*float(a.music_gain) + sfx*float(a.sfx_gain)

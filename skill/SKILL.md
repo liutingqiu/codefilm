@@ -123,9 +123,11 @@ python scripts/render.py comp.html -o out/film.mp4 --shutter 180 --workers 4   #
 python scripts/compose.py manifest.json
 ```
 Draft at 1080p30. A `--shutter 180` render adds real motion blur (numpy + Pillow);
-`--workers 4` renders in parallel; `--resume` fills missing frames after an interrupted run.
-Only render 4K60 after the cut is accepted.
-`render.py` writes `<out>.render.json` (fps, frames, shutter, captures, workers, page errors).
+`--workers 4` renders in parallel; `--resume` fills missing frames after an interrupted run
+(it clears stale frames when the composition or settings change). `--audio` pads a short track
+with silence and cuts to picture length. Only render 4K60 after the cut is accepted.
+`render.py` writes `<out>.render.json` (fps, actual pixel size, frames, shutter, captures, workers,
+page errors).
 
 ### 7 · Deliver
 Ship:

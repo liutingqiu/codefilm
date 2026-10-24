@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>拾光 · codefilm — 把想法，变成下一步</title>
 <meta name="description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
+<meta name="theme-color" content="#F2ECE1">
+<meta property="og:type" content="website">
+<meta property="og:title" content="拾光 · codefilm — 把想法，变成下一步">
+<meta property="og:description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
+<meta property="og:image" content="https://liutingqiu.github.io/codefilm/assets/poster.jpg">
+<meta property="og:image:width" content="1920">
+<meta property="og:image:height" content="1080">
+<meta property="og:url" content="https://liutingqiu.github.io/codefilm/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="拾光 · codefilm — 把想法，变成下一步">
+<meta name="twitter:description" content="一支 32 秒的品牌片，画面、声音、字幕全部由代码生成。codefilm 开源项目。">
+<meta name="twitter:image" content="https://liutingqiu.github.io/codefilm/assets/poster.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%23D9552B' stroke-width='6'/%3E%3Cline x1='32' y1='2' x2='32' y2='62' stroke='%23D9552B' stroke-width='6'/%3E%3C/svg%3E">
 <style>
   :root{
@@ -121,17 +133,18 @@
         <h1>把想法，<br>变成<em>下一步</em>。</h1>
         <p class="lede">一支 32 秒的品牌片。画面、声音、字幕，全部由代码生成；没有剪辑软件，没有素材库，没有视频模型。</p>
         <div class="actions">
-          <button class="btn primary" id="watch">▶ 观看完整版 · 有声</button>
+          <button type="button" class="btn primary" id="watch">▶ 观看完整版 · 有声</button>
           <a class="btn" href="https://github.com/liutingqiu/codefilm">查看源码 ↗</a>
         </div>
       </div>
       <div>
         <div class="video-card">
           <video id="film" src="promo/out/shiguang-promo.mp4" poster="assets/poster.jpg"
+                 aria-label="拾光 32 秒品牌片"
                  autoplay muted loop playsinline preload="metadata"></video>
           <div class="video-bar">
             <span>拾光 · 32s · 1920×1080 · 30fps</span>
-            <button class="sound" id="sound">🔇 打开声音</button>
+            <button type="button" class="sound" id="sound" aria-pressed="false">🔇 打开声音</button>
           </div>
         </div>
       </div>
@@ -173,7 +186,7 @@
           <div class="kicker">Open source</div>
           <h2>整套引擎，MIT。</h2>
           <p>codefilm 的脚本、模板、动效参考、质检门，以及这支片子的全部源码，都在一个仓库里。你可以把它装进 Claude Code、Codex 或任何能读文件的 agent。</p>
-          <p style="font-size:13px;color:#8F8779">借鉴的 30+ 个项目、许可证与具体借鉴点，全部列在 ATTRIBUTIONS.md。</p>
+          <p style="font-size:13px;color:#8F8779">借鉴的 34 个项目、许可证与具体借鉴点，全部列在 ATTRIBUTIONS.md。</p>
         </div>
         <div class="links">
           <a href="https://github.com/liutingqiu/codefilm">GitHub 仓库 <span>↗</span></a>
@@ -202,10 +215,12 @@
     film.currentTime = 0;
     film.play();
     sound.textContent = '🔊 关闭声音';
+    sound.setAttribute('aria-pressed', 'true');
   }
   function toggleSound() {
     film.muted = !film.muted;
     sound.textContent = film.muted ? '🔇 打开声音' : '🔊 关闭声音';
+    sound.setAttribute('aria-pressed', film.muted ? 'false' : 'true');
     if (!film.muted) film.play();
   }
   sound.addEventListener('click', toggleSound);

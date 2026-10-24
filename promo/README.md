@@ -51,29 +51,31 @@ out/contact.png    每 2 秒一帧的联系表
 
 ## 复现
 
+在仓库根目录运行（`vo.py` / `audio_build.py` 以自身所在目录为基准，从任意目录运行都可以）：
+
 ```bash
 # 1. 配音（需要网络；edge-tts）
-python vo.py
+python promo/vo.py
 
-# 2. 音乐 / 音效 / 混音
-python audio_build.py
+# 2. 音乐 / 音效 / 混音 -> promo/audio/mix.wav
+python promo/audio_build.py
 
 # 3. 契约检查
-python ../skill/scripts/check.py comp.html --runtime
+python skill/scripts/check.py promo/comp.html --runtime
 
 # 4. 渲染 960 帧（快门 180°，4 worker）
-python ../skill/scripts/render.py comp.html -o out/video.mp4 --fps 30 \
+python skill/scripts/render.py promo/comp.html -o promo/out/video.mp4 --fps 30 \
   --shutter 180 --samples 4 --samples-min 4 --samples-max 12 --gap 24 --workers 4
 
 # 5. 混音 + 响度
-ffmpeg -v error -y -i out/video.mp4 -i audio/mix.wav -c:v copy \
-  -c:a aac -b:a 192k -shortest -movflags +faststart out/mux.mp4
-ffmpeg -v error -y -i out/mux.mp4 -c:v copy \
+ffmpeg -v error -y -i promo/out/video.mp4 -i promo/audio/mix.wav -c:v copy \
+  -c:a aac -b:a 192k -t 32 -movflags +faststart promo/out/mux.mp4
+ffmpeg -v error -y -i promo/out/mux.mp4 -c:v copy \
   -af "loudnorm=I=-14:TP=-1.5:LRA=11" -c:a aac -b:a 192k \
-  -movflags +faststart out/shiguang-promo.mp4
+  -movflags +faststart promo/out/shiguang-promo.mp4
 
 # 6. 验收
-python ../skill/scripts/verify.py out/shiguang-promo.mp4 --comp comp.html \
+python skill/scripts/verify.py promo/out/shiguang-promo.mp4 --comp promo/comp.html \
   --shots 0,3.6,7.8,11.4,16.7,21.5,24.5,27.6 --shutter 180
 ```
 
