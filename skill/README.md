@@ -60,9 +60,9 @@ Verified: `check.py` PASS; re-render determinism PSNR `inf`; 240 frames in ~37 s
 180° + 4 workers on 960 frames in ~204 s; `verify.py --comp` PASS on the promo (carry 1.0,
 framing PASS, curves PASS with shutter).
 
-Not yet (P3): GEN/EDIT provider adapters beyond the prompt pack, 8–12 full style recipes,
-DSH marketplace packaging. CI lives in the project repo (`.github/workflows/ci.yml`).
-See the project's [`docs/00-synthesis.md`](../docs/00-synthesis.md).
+Not yet (P3): provider API calls for GEN/EDIT (the prompt pack and cut manifest are local),
+DSH marketplace packaging, platform-level QA. CI lives in the project repo
+(`.github/workflows/ci.yml`). See the project's [`docs/00-synthesis.md`](../docs/00-synthesis.md).
 
 ## Requirements
 

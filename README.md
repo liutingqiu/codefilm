@@ -83,8 +83,8 @@ ROUTE → INGEST → ANALYZE → DIRECT → BUILD → VERIFY → RENDER → DELI
 5. **Build.** One HTML composition; `window.__seek(t)` is a pure function; no `Date.now()`, no
    unseeded randomness, no wall-clock animation on the render path.
 6. **Verify.** Contract, determinism, loop seam, source-vs-code frame diff, rhythm/rest/audio oracle.
-7. **Render.** Headless Chrome seeks each frame, screenshots, FFmpeg encodes; audio is muxed and
-   loudness-normalized.
+7. **Render.** Headless Chrome seeks each frame (optionally across a 180° shutter), one or more
+   browser workers, screenshots, and FFmpeg encodes; audio is muxed and loudness-normalized.
 8. **Deliver.** MP4 + editable source + diff/QA evidence + `REVIEW.md` with known differences.
 
 Quality gates: contract, determinism, loop, replication diff, rhythm, carry, curves, framing,
