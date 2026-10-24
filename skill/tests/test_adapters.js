@@ -100,4 +100,29 @@ ok('framework entries carry install instructions, not a seek', () => {
   assert.strictEqual(r.seekable, false);
 });
 
+// The vendored build is gitignored (third-party license); when it is present,
+// verify the real GSAP timeline, not just the mock.
+let gsap = null;
+try {
+  const pkg = require('../vendor/gsap@3.15.0/gsap.min.js');
+  gsap = pkg.default || pkg;
+} catch (e) {
+  gsap = null;
+}
+if (gsap) {
+  ok('real GSAP timeline seeks deterministically', () => {
+    const obj = { x: 0 };
+    const tl = gsap.timeline({ paused: true });
+    tl.to(obj, { x: 100, duration: 1, ease: 'none' }, 0);
+    A.seek('gsap', tl, 0.5);
+    assert.strictEqual(obj.x, 50);
+    A.seek('gsap', tl, 0.8);
+    A.seek('gsap', tl, 0.5);
+    assert.strictEqual(obj.x, 50);
+    assert.strictEqual(gsap.version, '3.15.0');
+  });
+} else {
+  console.log('skip real GSAP timeline (vendor/gsap@3.15.0 not present)');
+}
+
 console.log(`\n${passed} adapter groups passed`);

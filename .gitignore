@@ -7,6 +7,9 @@ __pycache__/
 # Node
 node_modules/
 
+# Optional vendored JS libraries (downloaded on demand; see skill/vendor/README.md)
+skill/vendor/*/
+
 # Generated film working dirs
 skill/work/
 skill/out/

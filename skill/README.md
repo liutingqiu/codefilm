@@ -59,7 +59,7 @@ Working and tested on this machine:
 | `tests/test_library.js` | Node checks for 8 looks / 7 builders / 8 recipes |
 | `tests/test_adapters.js` | Node tests for the optional-library adapters (11 groups) |
 | `tests/test_scripts.py` | CLI path/validation smoke tests (7) |
-| demos | 8 s original, 6 s motion library, 9.4 s scene kit, 4 s looks, 2.6 s replication |
+| demos | 8 s original, 6 s motion library, 9.4 s scene kit, 4 s looks, 4 s GSAP adapter, 2.6 s replication |
 
 Verified: `check.py` PASS; re-render determinism PSNR `inf`; 240 frames in ~37 s; shutter
 180° + 4 workers on 960 frames in ~204 s; `verify.py --comp` PASS on the promo (carry 1.0,
@@ -102,6 +102,7 @@ examples/demo/        8-second original demo + REVIEW.md
 examples/motion-demo/ 6-second motion library demo
 examples/scene-demo/  9.4-second scene kit demo
 examples/looks-demo/  4-second 8-look gallery
+examples/gsap-demo/   4-second real GSAP timeline through adapters.js
 examples/think-big/   2.6-second replication of a motion2code gallery clip + measured diff
 tests/                Node tests for motion/looks/scenes/adapters + Python CLI tests
 ```

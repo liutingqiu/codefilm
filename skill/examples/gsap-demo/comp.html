@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
+<title>codefilm · GSAP adapter demo</title>
+<style>
+  :root{
+    --paper:#F2ECE1; --ink:#1B1A17; --muted:#7F7768; --accent:#D9552B;
+    --line:#D8CFC0; --card:#FFFDF8;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:"Segoe UI",system-ui,sans-serif}
+  #stage{position:absolute;inset:0;overflow:hidden}
+  #stage::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(900px 600px at 18% 0%, rgba(255,255,255,.55), transparent 62%),
+               radial-gradient(700px 500px at 100% 20%, rgba(217,85,43,.06), transparent 60%)}
+  #title{position:absolute;left:120px;top:190px;z-index:2}
+  #title h1{margin:0;font:900 220px/0.9 "Arial Black",Impact,sans-serif;
+    letter-spacing:-.07em;white-space:nowrap}
+  #title h1 .char{display:inline-block;will-change:transform,opacity}
+  #title p{margin:24px 0 0;font:600 22px/1.4 ui-monospace,Consolas,monospace;
+    letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+  #dot{position:absolute;left:140px;top:610px;width:20px;height:20px;border-radius:50%;
+    background:var(--accent);z-index:3;will-change:transform}
+  #rail{position:absolute;left:140px;right:140px;top:618px;height:2px;background:var(--line);z-index:1}
+  #card{position:absolute;left:50%;top:470px;transform:translate(-50%,-50%);
+    width:760px;padding:38px 44px;background:var(--card);border:2px solid var(--ink);
+    box-shadow:14px 14px 0 rgba(27,26,23,.12);z-index:4;will-change:transform,opacity}
+  #card .kicker{font:700 13px/1 ui-monospace,Consolas,monospace;letter-spacing:.18em;
+    color:var(--accent);text-transform:uppercase;margin-bottom:22px}
+  #cardCode{font:600 34px/1.45 ui-monospace,Consolas,monospace;letter-spacing:-.02em}
+  #cardCode em{font-style:normal;color:var(--accent)}
+  #bar{position:absolute;left:44px;right:44px;bottom:30px;height:4px;background:var(--line);
+    transform-origin:0 50%;transform:scaleX(0)}
+  #end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;background:var(--ink);color:var(--paper);z-index:5;opacity:0}
+  #end .mark{width:54px;height:54px;border:3px solid var(--accent);border-radius:50%;position:relative;
+    margin-bottom:34px}
+  #end .mark::before{content:"";position:absolute;left:50%;top:-12px;width:3px;height:78px;
+    background:var(--accent);transform:translateX(-50%)}
+  #endText{font:900 118px/1 "Arial Black",Impact,sans-serif;letter-spacing:-.06em}
+  #end small{margin-top:24px;font:600 18px/1 ui-monospace,Consolas,monospace;
+    letter-spacing:.22em;color:var(--accent);text-transform:uppercase}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="title">
+    <h1 id="titleText" data-text>GSAP</h1>
+    <p id="titleSub">deterministic timeline</p>
+  </div>
+  <div id="rail"></div>
+  <div id="dot"></div>
+  <div id="card">
+    <div class="kicker">adapter check</div>
+    <div id="cardCode">CF.adapters.seek('gsap', tl, t)</div>
+    <div id="bar"></div>
+  </div>
+  <div id="end">
+    <div class="mark"></div>
+    <div id="endText" data-text>CF</div>
+    <small>codefilm · html-to-mp4-engine</small>
+  </div>
+</div>
+
+<script src="../../vendor/gsap@3.15.0/gsap.min.js"></script>
+<script src="../../library/adapters.js"></script>
+<script>
+(function () {
+  'use strict';
+  const params = new URLSearchParams(location.search);
+  const external = params.has('external');
+  const stage = document.getElementById('stage');
+  const title = document.getElementById('titleText');
+
+  // Split once at build time; GSAP animates the spans from a paused timeline.
+  title.innerHTML = Array.from('GSAP').map((ch) =>
+    `<span class="char">${ch}</span>`).join('');
+
+  if (!window.gsap || !window.CF || !CF.adapters) {
+    console.error('GSAP or adapters.js is missing; see vendor/README.md');
+    return;
+  }
+
+  const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+
+  tl.fromTo('#titleText .char',
+      { y: 120, opacity: 0, rotate: 4 },
+      { y: 0, opacity: 1, rotate: 0, duration: .7, stagger: .07 }, 0)
+    .fromTo('#titleSub', { opacity: 0, y: 18 },
+      { opacity: 1, y: 0, duration: .5 }, .35)
+    .fromTo('#card', { opacity: 0, y: 90, scale: .96 },
+      { opacity: 1, y: 0, scale: 1, duration: .55 }, 1.5)
+    .fromTo('#bar', { scaleX: 0 },
+      { scaleX: 1, duration: 1.1, ease: 'none' }, 1.62)
+    .to('#title', { opacity: 0, y: -36, duration: .35 }, 1.85)
+    .to('#card', { opacity: 0, y: -46, duration: .4 }, 2.45)
+    .fromTo('#end', { opacity: 0 },
+      { opacity: 1, duration: .55 }, 2.2)
+    .fromTo('#endText', { opacity: 0, y: 26 },
+      { opacity: 1, y: 0, duration: .6 }, 2.3)
+    .fromTo('#dot', { x: -100 },
+      { x: 240, duration: 2.8, ease: 'none' }, 0);
+
+  window.__meta = {
+    dur: 4.0,
+    fps: 30,
+    w: 1920,
+    h: 1080,
+    carry: [{ t: 1.5, id: '#dot' }],
+    inFrame: {
+      '#title': [0, 1.85, 'whole'],
+      '#card': [1.5, 2.45, 'whole'],
+      '#end': [2.2, 3.99, 'whole']
+    }
+  };
+
+  window.__seek = async (t) => {
+    CF.adapters.seek('gsap', tl, t);
+  };
+
+  window.TEXTS = () => {
+    const shown = (el) => {
+      for (let n = el; n && n.nodeType === 1; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        if (cs.display === 'none' || cs.visibility === 'hidden' || parseFloat(cs.opacity) < .05) return false;
+      }
+      return true;
+    };
+    const out = [];
+    for (const el of document.querySelectorAll('[data-text]')) {
+      if (!shown(el)) continue;
+      const cs = getComputedStyle(el);
+      const r = el.getBoundingClientRect();
+      out.push({ id: el.id, text: el.textContent.trim(), size: parseFloat(cs.fontSize) || 0,
+        x0: r.left, y0: r.top, x1: r.right, y1: r.bottom });
+    }
+    return out;
+  };
+
+  // Freeze at ?t=, otherwise loop in real time only for human preview.
+  const freeze = params.get('t');
+  if (freeze != null) {
+    window.__seek(parseFloat(freeze));
+  } else if (!external) {
+    tl.repeat(-1).play(0);
+  }
+
+  window.__ready = Promise.resolve(true);
+  if (external) window.__seek(0);
+})();
+</script>
+</body>
+</html>

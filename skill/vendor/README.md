@@ -19,7 +19,12 @@ is where the agent puts a library when a film genuinely needs one.
 
 | Library | Version | Source URL | SHA-256 | License | Used by |
 |---|---|---|---|---|---|
-| _none_ | | | | | |
+| GSAP (`gsap.min.js`) | 3.15.0 | `https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js` | `92bb9a96476f983d212a2bc4f54c889039c1696dd4461d40a736860938570fbb` | GSAP Standard (**not MIT**) | `examples/gsap-demo` |
+
+The library folders are **gitignored by default** in this repository: third-party code keeps its
+own license and should not be relicensed by this MIT project. Commit a vendored folder only when
+the license clearly permits it. The registry row above is still required so the build is
+reproducible.
 
 ## Loading examples
 

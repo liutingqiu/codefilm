@@ -1,0 +1,25 @@
+{
+ "comp": "D:\\mine\\video-skills-lab\\repo-codefilm\\skill\\examples\\gsap-demo\\comp.html",
+ "out": "D:\\mine\\video-skills-lab\\repo-codefilm\\skill\\examples\\gsap-demo\\out.mp4",
+ "fps": 30.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "css_size": [
+  1920,
+  1080
+ ],
+ "scale": 1.0,
+ "frames": 120,
+ "duration": 4.0,
+ "seconds": 11.6,
+ "audio": null,
+ "workers": 1,
+ "shutter": 0,
+ "samples": 1,
+ "captures": 120,
+ "still_frames": 0,
+ "cut_frames": 0,
+ "errors": []
+}

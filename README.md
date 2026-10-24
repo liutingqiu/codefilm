@@ -130,7 +130,8 @@ skill/                  the portable agent skill (SKILL.md, scripts, templates, 
   styles/               8 style recipes (look + scene mix + avoid list)
   references/           route, contract, verify, motion library, js-libraries (versions/licenses)
   vendor/               optional pinned browser libraries (empty by default)
-  examples/             8 s original, 6 s motion, 9.4 s scene kit, 4 s looks, 2.6 s replication
+  examples/             8 s original, 6 s motion, 9.4 s scene kit, 4 s looks,
+                        4 s GSAP adapter check, 2.6 s replication
   tests/                Node tests for motion/looks/scenes/adapters; CLI smoke tests
 promo/                  the 32 s 拾光 brand film
   comp.html             the composition (pure render(t), no external assets)
