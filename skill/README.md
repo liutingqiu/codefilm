@@ -53,9 +53,11 @@ Working and tested on this machine:
 | `library/motion.js` | 36 deterministic moves: entrances, exits, seams, camera, contact, type |
 | `library/scenes.js` | reusable title/cards/lines/chat/ledger/chart/end builders |
 | `library/looks.js` | 8 look token sets |
+| `library/adapters.js` | optional-library registry: `hint` / `missing` / `seek` / `wrap` / `register` |
 | `styles/index.json` | 8 style recipes (look + scene mix + avoid list) |
 | `tests/test_motion.js` | Node tests for the motion library (12 groups) |
 | `tests/test_library.js` | Node checks for 8 looks / 7 builders / 8 recipes |
+| `tests/test_adapters.js` | Node tests for the optional-library adapters (11 groups) |
 | `tests/test_scripts.py` | CLI path/validation smoke tests (7) |
 | demos | 8 s original, 6 s motion library, 9.4 s scene kit, 4 s looks, 2.6 s replication |
 
@@ -89,17 +91,28 @@ SKILL.md              entry: routing, 8-step loop, hard rules
 AGENTS.md             short cross-agent entry
 scripts/              ingest, analyze, check, render, frame_diff, probe, verify,
                       tts, audio, taste, compose, gen_prompts, install
-library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks)
+library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks),
+                      adapters.js (optional GSAP/Anime/Lottie/Motion/Three/Pixi/Chart/D3/p5)
 styles/index.json     8 style recipes (look + scene mix + avoid list)
 templates/comp.html   demo composition to copy
-references/           route, contract, analyze, verify, styles, motion-library, scenes, audio, dsh
+vendor/               optional pinned browser libraries (empty by default; provenance rules)
+references/           route, contract, analyze, verify, styles, motion-library, scenes, audio,
+                      js-libraries, dsh
 examples/demo/        8-second original demo + REVIEW.md
 examples/motion-demo/ 6-second motion library demo
 examples/scene-demo/  9.4-second scene kit demo
 examples/looks-demo/  4-second 8-look gallery
 examples/think-big/   2.6-second replication of a motion2code gallery clip + measured diff
-tests/                Node tests for motion/looks/scenes
+tests/                Node tests for motion/looks/scenes/adapters + Python CLI tests
 ```
+
+## Optional JS libraries
+
+The engine ships no third-party JS. If a film needs GSAP, Anime.js, Lottie, Motion, Three.js,
+PixiJS, Chart.js, D3 or p5, `library/adapters.js` drives the already-loaded library from `seek(t)`
+(or gives the renderer recipe). The pinned versions, licenses and setup requirements are in
+[`references/js-libraries.md`](references/js-libraries.md). A missing library is vendored under
+`vendor/<name>@<version>/` with URL, SHA-256 and license recorded — never `@latest` in a render.
 
 ## License / credits
 

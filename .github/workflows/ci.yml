@@ -27,6 +27,7 @@ jobs:
         run: |
           node skill/tests/test_motion.js
           node skill/tests/test_library.js
+          node skill/tests/test_adapters.js
       - name: CLI tests
         run: |
           cd skill && python -m unittest discover -s tests -p "test_*.py"

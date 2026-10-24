@@ -19,7 +19,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 INCLUDE = ["SKILL.md", "AGENTS.md", "README.md", "scripts", "templates", "references",
-           "library", "styles", "examples", "tests"]
+           "library", "styles", "vendor", "examples", "tests"]
 IGNORE = shutil.ignore_patterns("__pycache__", "*.pyc", "*.render.json", "*.build",
                                 "out", "work", "diff", "_frames", "_seq", ".git")
 

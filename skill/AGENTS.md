@@ -14,5 +14,9 @@ Short version:
 8. `python scripts/frame_diff.py source.mp4 out/draft.mp4 -o diff/`; open the pairs.
 9. Deliver mp4 + editable code + evidence + `REVIEW.md`.
 
+Zero dependency is the default. If a composition needs a library that is not present, read
+`references/js-libraries.md`, download the pinned version into `vendor/`, record URL/hash/license,
+and drive it through `CF.adapters`. Never use `@latest` or an unpinned runtime CDN in a render.
+
 Never claim "pixel perfect". Never embed the reference video in a CODE build. Never use
 `Date.now()`, unseeded `Math.random()` or wall-clock animation on the render path.

@@ -109,12 +109,13 @@ finished film:
 - **Done:** ingest, analyze (with optical flow), check, render (shutter/parallel/resume),
   frame_diff, probe (carry/framing/curves/reading), verify, TTS, audio synth, edit_plan (EDIT),
   gen_prompts (GEN), compose, taste, install; a motion library (36 moves), scene kit (7 builders),
-  8 looks + 8 style recipes; demos for each; the 32 s 拾光 promo; GitHub Pages landing page prepared.
+  8 looks + 8 style recipes; optional JS adapters (GSAP/Anime/Lottie/Motion/Three/Pixi/Chart/D3/p5);
+  demos for each; the 32 s 拾光 promo; GitHub Pages homepage live.
 - **Leftovers (deliberately out of scope):** real provider API calls for GEN/EDIT (the prompt
   pack and cut manifest are local), DSH marketplace packaging, broader platform QA.
 
-No releases, tags or npm packages have been published. The GitHub Pages homepage is prepared but
-not enabled; it waits for a human review.
+No releases, tags or npm packages have been published. The GitHub Pages homepage is live at
+[`liutingqiu.github.io/html-to-mp4-engine`](https://liutingqiu.github.io/html-to-mp4-engine/).
 
 ---
 
@@ -124,10 +125,13 @@ not enabled; it waits for a human review.
 skill/                  the portable agent skill (SKILL.md, scripts, templates, references)
   scripts/              ingest, analyze, check, render (shutter/parallel), frame_diff, probe,
                         verify, tts, audio, edit_plan, gen_prompts, taste, compose, install
-  library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks)
+  library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks),
+                        adapters.js (optional library registry)
   styles/               8 style recipes (look + scene mix + avoid list)
+  references/           route, contract, verify, motion library, js-libraries (versions/licenses)
+  vendor/               optional pinned browser libraries (empty by default)
   examples/             8 s original, 6 s motion, 9.4 s scene kit, 4 s looks, 2.6 s replication
-  tests/                Node tests for motion/looks/scenes/styles; CLI smoke tests
+  tests/                Node tests for motion/looks/scenes/adapters; CLI smoke tests
 promo/                  the 32 s 拾光 brand film
   comp.html             the composition (pure render(t), no external assets)
   vo.py                 Chinese narration via edge-tts
@@ -144,6 +148,19 @@ Install the skill:
 ```bash
 python skill/scripts/install.py --target claude   # or --target agents, or --dest <dir>
 ```
+
+---
+
+## Optional JS libraries
+
+The engine ships **no third-party JavaScript** and needs no npm install. If a film genuinely
+needs GSAP, Anime.js, Lottie, Motion, Three.js, PixiJS, Chart.js, D3 or p5, the
+[adapter layer](skill/library/adapters.js) drives an already-loaded library from `seek(t)`; the
+pinned versions, licenses, bundle sizes and setup recipes are in
+[`skill/references/js-libraries.md`](skill/references/js-libraries.md). Missing libraries are
+vendored under `skill/vendor/<name>@<version>/` with URL, SHA-256 and license recorded — never
+`@latest` on the render path. Three.js/Motion are ESM-only; Remotion and Motion Canvas are
+separate build-system routes, not drop-in adapters.
 
 ---
 

@@ -99,6 +99,8 @@ Copy `templates/comp.html` and write one composition. Rules:
 - Words exactly as the source; no tracing, no embedding the reference video as a texture.
 - Prefer transform/opacity; animate the wrapper, never the timed media element.
 - A landed title holds still; motion moves on to the next thing.
+- **Zero dependency by default.** If the film genuinely needs a JS library, use the adapter
+  registry and a locally vendored, pinned build — never `@latest` on the render path.
 
 ### 5 · Verify
 ```bash
@@ -160,6 +162,34 @@ Query parameters:
 
 ---
 
+## Optional JS libraries (download on demand)
+
+codefilm bundles no third-party JS. `library/adapters.js` only drives a library that is already
+present, and `references/js-libraries.md` has the pinned versions, licenses and seek recipes.
+
+If a composition genuinely needs a missing library:
+
+1. Read `references/js-libraries.md` and `CF.adapters.hint(name)` for the version, license and
+   pinned URL.
+2. Download that exact version into `vendor/<name>@<version>/` from the official npm tarball or
+   the pinned CDN URL. Do this as part of the build step; don't stop and ask the user to install
+   it manually. Never use `@latest`, a random mirror, or a runtime CDN for the final render. Do
+   not run postinstall scripts from an unfamiliar package.
+3. Load it from the local vendor path (`<script src="vendor/...">` or an import map). Use
+   `CF.adapters.seek(name, instance, t)` for timeline/player libraries; for Three/Pixi/Chart/D3/p5
+   follow the renderer recipe instead of inventing a generic seek.
+4. Record version, source URL, SHA-256 and license in `vendor/README.md`; keep the license file.
+5. Re-run `check.py` and `render.py`; confirm deterministic seek and no unexpected network calls.
+
+If the network is blocked or the license is unclear, stop and report the missing library. Do not
+fake an API or copy code from an incompatible license.
+
+Renderer/ framework notes: Three.js and Motion are ESM-only (import map or bundler); Pixi v8 is
+WebGL/WebGPU (check headless Chrome flags); Remotion and Motion Canvas are separate build-system
+routes, not browser adapters.
+
+---
+
 ## Quality gates (hard)
 
 1. **Contract** — `check.py` 0 errors.
@@ -199,10 +229,14 @@ scripts/install.py     install to Claude / Codex / DSH skill directories
 library/motion.js      36 deterministic motion helpers
 library/scenes.js      reusable title/cards/lines/chat/ledger/chart/end builders
 library/looks.js       8 look token sets
+library/adapters.js    optional-library registry: seek / wrap / hint / missing / register
 styles/index.json      8 style recipes (look + scene mix + avoid list)
 templates/comp.html    a complete demo composition (8 s, 1920×1080)
+vendor/                optional pinned browser libraries (empty by default; see vendor/README)
 tests/test_motion.js   node tests for the motion library
-references/            route, contract, analyze, verify, styles, motion-library, scenes, audio
+tests/test_adapters.js node tests for the optional-library adapters
+references/            route, contract, analyze, verify, styles, motion-library, scenes, audio,
+                       js-libraries (versions, licenses, setup, seek recipes)
 ```
 
 ## Install

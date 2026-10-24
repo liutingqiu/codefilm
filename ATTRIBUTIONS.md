@@ -6,6 +6,12 @@ project is MIT or Apache-2.0, its ideas and parameter choices were adapted with 
 project is AGPL-3.0 or PolyForm-Noncommercial, only architecture and process were studied — no code
 was copied.
 
+Optional JS libraries (GSAP, Anime.js, Lottie, Motion, Three.js, PixiJS, Chart.js, D3, p5,
+Remotion, Motion Canvas) are **not bundled**. Their pinned versions, licenses, configuration
+notes and seek recipes are documented in
+[`skill/references/js-libraries.md`](skill/references/js-libraries.md); anything vendored is
+recorded in [`skill/vendor/README.md`](skill/vendor/README.md).
+
 ## Directly informed the engine
 
 | Project | License | What informed `codefilm` |
