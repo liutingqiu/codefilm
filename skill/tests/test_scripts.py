@@ -25,6 +25,7 @@ def run(script: str, args: list[str], cwd: Path | None = None) -> subprocess.Com
                           capture_output=True, text=True, errors="replace")
 
 
+@unittest.skipUnless(shutil.which("ffmpeg"), "ffmpeg not on PATH")
 class EditPlanTests(unittest.TestCase):
     def test_relative_out_lands_next_to_manifest(self):
         with tempfile.TemporaryDirectory() as td:
