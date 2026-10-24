@@ -53,7 +53,9 @@ Verified: `check.py` PASS; re-render determinism PSNR `inf`; render 240 frames i
 third-party `window.anim` composition rendered by the same engine.
 
 Not in P0: motion blur, optical flow, TTS/SFX synthesis, style library, GEN/AVATAR providers,
-auto-annotation of shot cards. These are P1/P2 (see `../notes/00-synthesis.md`).
+auto-annotation of shot cards. These are P1/P2 (see the project's
+[`docs/00-synthesis.md`](../docs/00-synthesis.md), or the
+[GitHub copy](https://github.com/liutingqiu/codefilm/blob/main/docs/00-synthesis.md)).
 
 ## Requirements
 

@@ -88,7 +88,25 @@ ROUTE → INGEST → ANALYZE → DIRECT → BUILD → VERIFY → RENDER → DELI
 8. **Deliver.** MP4 + editable source + diff/QA evidence + `REVIEW.md` with known differences.
 
 Quality gates: contract, determinism, loop, replication diff, rhythm, carry, curves, framing,
-audio, text readability.
+audio, text readability. In the current P0 engine, `check.py`, `frame_diff.py` and `verify.py`
+automate contract/determinism/loop/diff/rhythm/rest/audio; **carry, curves, framing and reading time
+are review checklists**, not yet automated (P1).
+
+---
+
+## Status
+
+This repository is the **P0** slice of the plan, plus one finished film:
+
+- **Done:** ingest, analyze, check, render, frame_diff, verify, compose, install; an 8 s demo, a
+  2.6 s reference replication, and the 32 s 拾光 promo; GitHub Pages landing page prepared.
+- **Not done yet (P1):** a reusable motion library, a scene library, 8 style token sets, shutter
+  motion blur, parallel render workers/resume, and automated carry/curves/framing/reading-time checks.
+- **Not done yet (P2/P3):** TTS/SFX moved into the skill, GEN/EDIT adapters, 8–12 implemented styles,
+  taste memory, DSH plugin manifest, CI/tests.
+
+No releases, tags or npm packages have been published. The GitHub Pages homepage is prepared but
+not enabled; it waits for a human review.
 
 ---
 

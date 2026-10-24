@@ -145,6 +145,9 @@ Query parameters:
 
 ## Quality gates (hard)
 
+Automated today by `check.py` / `frame_diff.py` / `verify.py`: 1, 2, 3, 4, 5, 9.
+Manual review in P0: 6 (carry), 7 (curves), 8 (framing), 10 (reading time). P1 automates those.
+
 1. **Contract** — `check.py` 0 errors.
 2. **Determinism** — same `t` after other seeks produces the same pixels.
 3. **Loop** — `frame(duration) == frame(0)` when the film loops; no jump at the wrap.
