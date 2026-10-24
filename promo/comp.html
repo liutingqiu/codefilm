@@ -251,7 +251,9 @@
 <script>
 (() => {
   const DUR = 32.0;
-  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false};
+  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false,
+    carry: [{t: 3.6, id: '#chaos .note:nth-child(1)'}, {t: 7.8, id: '#chaos .note:nth-child(1)'}],
+    inFrame: {'#brand-big': [9.0, 11.35, 'whole'], '#plan': [21.7, 24.4]}};
   const T = {
     s1:{a:0.0,b:3.6}, s2:{a:3.6,b:7.8}, s3:{a:7.8,b:11.4}, s4:{a:11.4,b:16.7},
     s5:{a:16.7,b:21.5}, s6:{a:21.5,b:24.5}, s7:{a:24.5,b:27.6}, s8:{a:27.6,b:32.0}
@@ -511,6 +513,20 @@
   window.TEXTS = () => {
     const out = [];
     document.querySelectorAll('[data-text]').forEach(el => {
+      const cs = getComputedStyle(el);
+      const op = parseFloat(cs.opacity || '1');
+      const r = el.getBoundingClientRect();
+      if (op > .05 && cs.display !== 'none' && r.width > 1 && r.height > 1) {
+        out.push({id: el.id || el.dataset.text, text: el.dataset.text,
+                  size: parseFloat(cs.fontSize || '0'),
+                  x0: r.left, y0: r.top, x1: r.right, y1: r.bottom});
+      }
+    });
+    return out;
+  };
+  window.TEXTS = () => {
+    const out = [];
+    document.querySelectorAll('[data-text]').forEach(el => {
       const op = parseFloat(getComputedStyle(el).opacity || '1');
       const r = el.getBoundingClientRect();
       if (op > 0.05 && r.width > 1 && r.height > 1) {
@@ -521,10 +537,12 @@
     return out;
   };
   window.__motion = (t0,t1) => {
-    if (t0 > 3.4 && t0 < 4.6) return 900;
-    if (t0 > 7.8 && t0 < 8.9) return 800;
-    if (t0 > 24.6 && t0 < 26.0) return 700;
-    return 260;
+    const hit = (a,b) => t1 > a && t0 < b;
+    if (hit(3.5, 4.6)) return 500;
+    if (hit(7.8, 9.0)) return 900;
+    if (hit(24.5, 26.2)) return 700;
+    if (hit(0, 3.4) || hit(11.4, 16.8) || hit(16.8, 21.4) || hit(21.5, 24.4) || hit(27.6, 32)) return 0;
+    return 120;
   };
   window.__ready = Promise.resolve().then(() => {
     render(0);

@@ -36,6 +36,13 @@ It does **not** claim to rebuild any video. It routes first.
 Write the route to `ROUTE.md` and tell the user what will and will not be faithful. Never silently
 promise a carbon copy: OpenMontage's rule applies — offer 2–3 differentiated directions, not one clone.
 
+Route adapters:
+
+- **GEN** — `scripts/gen_prompts.py shots.json -o prompts.md --format seedance` produces the
+  copy-paste prompt pack; no API call, no invented reference assets.
+- **EDIT** — `scripts/edit_plan.py cuts.json -o manifest.json` turns clip in/out points into a
+  manifest; `scripts/compose.py manifest.json` trims, concatenates, mixes voice and burns SRT.
+
 ---
 
 ## The eight-step loop
@@ -98,21 +105,27 @@ Copy `templates/comp.html` and write one composition. Rules:
 python scripts/check.py comp.html --runtime
 python scripts/render.py comp.html -o out/draft.mp4
 python scripts/frame_diff.py source.mp4 out/draft.mp4 -o diff/
-python scripts/verify.py out/draft.mp4 --shots 0,1.8,4.2,6.4
+python scripts/probe.py comp.html --root . --json out/probe.json
+python scripts/verify.py out/draft.mp4 --shots 0,1.8,4.2,6.4 --comp comp.html --root .
 ```
 - `check.py`: contract, deterministic seek, loop seam, console/network errors.
 - `frame_diff.py`: side-by-side pairs + score. **Open the pairs.** Score is a pointer, not a verdict.
-- `verify.py`: rhythm (shot-length CV, rest, burst), audio (peak/clipping/quiet). Use it for original work.
+- `probe.py`: carry / framing / curves / reading at the element level.
+- `verify.py`: rhythm (shot-length CV, rest, burst), audio (peak/clipping/quiet), plus the probe legs
+  when `--comp` is given.
 - Read the worst times first; fix structure before polish.
 
 ### 6 · Render
 ```bash
 python scripts/render.py comp.html -o out/film.mp4 --fps 30
+python scripts/render.py comp.html -o out/film.mp4 --shutter 180 --workers 4   # quality pass
 # optional audio:
 python scripts/compose.py manifest.json
 ```
-Draft at 1080p30. Only render 4K60 after the cut is accepted.
-`render.py` writes `<out>.render.json` (fps, frames, size, seconds, page errors).
+Draft at 1080p30. A `--shutter 180` render adds real motion blur (numpy + Pillow);
+`--workers 4` renders in parallel; `--resume` fills missing frames after an interrupted run.
+Only render 4K60 after the cut is accepted.
+`render.py` writes `<out>.render.json` (fps, frames, shutter, captures, workers, page errors).
 
 ### 7 · Deliver
 Ship:
@@ -133,7 +146,9 @@ window.__seek = async (t) => { render(t); };   // preferred
 // window.render = (t) => { ... }
 window.__ready = Promise.resolve(true);          // or <html data-ready="1">
 window.__motion = (t0, t1) => px;                // optional, for motion blur
-window.TEXTS = (t) => [{id, text, x0, y0, x1, y1}]; // optional, for reading-time checks
+window.TEXTS = (t) => [{id, text, size, x0, y0, x1, y1}]; // optional, for reading-time checks
+window.__meta.carry = [{t: 3.5, id: '#dot'}];    // optional, same carrier across a cut
+window.__meta.inFrame = {'#title': [0, 1.4, 'whole']}; // optional, framing windows
 ```
 
 Query parameters:
@@ -144,9 +159,6 @@ Query parameters:
 ---
 
 ## Quality gates (hard)
-
-Automated today by `check.py` / `frame_diff.py` / `verify.py`: 1, 2, 3, 4, 5, 9.
-Manual review in P0: 6 (carry), 7 (curves), 8 (framing), 10 (reading time). P1 automates those.
 
 1. **Contract** — `check.py` 0 errors.
 2. **Determinism** — same `t` after other seeks produces the same pixels.
@@ -159,21 +171,36 @@ Manual review in P0: 6 (carry), 7 (curves), 8 (framing), 10 (reading time). P1 a
 9. **Audio** — peak ≤ -1 dBFS; no clipping; music ducks under voice; -14…-16 LUFS.
 10. **Text** — on-screen long enough to read; never over the subject; no clipped lines.
 
+Automated today: 1–5 by `check.py` / `frame_diff.py` / `verify.py`; 9 by `verify.py`;
+6–8 and 10 by `probe.py` (and `verify.py --comp`; reading time is advisory for large display type
+and VO subtitles).
+
 ---
 
 ## Files
 
 ```
 scripts/ingest.py      download/copy, frames, cuts, audio, contact sheet, optional ASR
-scripts/analyze.py     energy map, shot stats, palette
-scripts/render.py      deterministic frame capture + ffmpeg
+scripts/analyze.py     energy map, shot stats, palette, optional optical flow
+scripts/render.py      deterministic frame capture + shutter blur + parallel + resume + ffmpeg
 scripts/frame_diff.py  source vs render, side-by-side + score
 scripts/check.py       static + runtime contract checks
-scripts/verify.py      rhythm/rest/burst/audio oracle
+scripts/probe.py       carry / framing / curves / reading at the element level
+scripts/verify.py      rhythm/rest/burst/audio oracle + probe legs
 scripts/compose.py     manifest → finished film (shots + voice + SRT)
-scripts/install.py     install to Claude/Codex skills directories
+scripts/tts.py         edge-tts narration + per-line timings
+scripts/audio.py       numpy BGM + SFX + VO mix
+scripts/taste.py       persist user corrections as rules
+scripts/edit_plan.py   cut list → compose manifest (EDIT route)
+scripts/gen_prompts.py shot list → prompt pack (GEN route)
+scripts/install.py     install to Claude / Codex / DSH skill directories
+library/motion.js      36 deterministic motion helpers
+library/scenes.js      reusable title/cards/lines/chat/ledger/chart/end builders
+library/looks.js       8 look token sets
+styles/index.json      8 style recipes (look + scene mix + avoid list)
 templates/comp.html    a complete demo composition (8 s, 1920×1080)
-references/            route, contract, analyze, verify, styles
+tests/test_motion.js   node tests for the motion library
+references/            route, contract, analyze, verify, styles, motion-library, scenes, audio
 ```
 
 ## Install

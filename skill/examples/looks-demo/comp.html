@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<link rel="icon" href="data:,">
+<title>codefilm · 8 looks</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#F2ECE1;color:#1B1A17;
+    font-family:"Segoe UI",system-ui,sans-serif}
+  #stage{position:absolute;inset:0;background:#F2ECE1}
+  #stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(1200px 700px at 18% 0%,rgba(255,255,255,.5),transparent 60%)}
+  #title{position:absolute;left:96px;top:70px;font-family:Georgia,serif;font-size:64px;font-weight:700;
+    letter-spacing:-.04em}
+  #title span{color:#D9552B}
+  #sub{position:absolute;left:100px;top:150px;font-size:18px;letter-spacing:.2em;color:#8A8275;text-transform:uppercase}
+  #grid{position:absolute;left:96px;right:96px;top:220px;display:grid;grid-template-columns:repeat(4,1fr);
+    gap:22px}
+  .look-card{height:330px;padding:24px 26px;border:1px solid var(--cfs-line);background:var(--cfs-paper);
+    color:var(--cfs-ink);display:flex;flex-direction:column;justify-content:space-between;
+    transform-origin:50% 50%;will-change:transform,opacity;box-shadow:8px 8px 0 rgba(27,26,23,.08)}
+  .look-card .lab{font:700 11px/1 monospace;letter-spacing:.14em;color:var(--cfs-muted);text-transform:uppercase}
+  .look-card .aa{font-family:var(--cfs-display);font-size:94px;line-height:1;letter-spacing:-.04em}
+  .look-card .body{font-family:var(--cfs-body);font-size:14px;line-height:1.5;color:var(--cfs-muted)}
+  .look-card .sw{display:flex;gap:8px;margin-top:14px}
+  .look-card .sw i{display:block;width:34px;height:12px;background:var(--cfs-accent)}
+  .look-card .sw i:nth-child(2){background:var(--cfs-line)}
+  .look-card .sw i:nth-child(3){background:var(--cfs-card)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="title">8 <span>looks</span></div>
+  <div id="sub">one clock · eight systems</div>
+  <div id="grid"></div>
+</div>
+<script src="../../library/motion.js"></script>
+<script src="../../library/looks.js"></script>
+<script>
+(() => {
+  const DUR = 4.0;
+  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false};
+  const grid = document.getElementById('grid');
+  const cards = CF.looks.names.map((name, i) => {
+    const look = CF.looks.get(name);
+    const card = document.createElement('div');
+    card.className = 'look-card';
+    CF.looks.apply(card, name);
+    card.innerHTML = `<div class="lab">${String(i + 1).padStart(2, '0')} · ${look.label}</div>
+      <div class="aa">Aa</div>
+      <div><div class="body">The quick brown fox jumps over the lazy dog.</div>
+      <div class="sw"><i></i><i></i><i></i></div></div>`;
+    grid.appendChild(card);
+    return card;
+  });
+
+  function render(t) {
+    const headIn = CF.ease.outCubic(CF.clamp(t / .6));
+    document.getElementById('title').style.opacity = headIn.toFixed(3);
+    document.getElementById('sub').style.opacity = CF.ease.outCubic(CF.clamp((t - .2) / .6)).toFixed(3);
+    cards.forEach((card, i) => {
+      const st = CF.popIn(card, t, .15 + i * .09, { s0: .9, over: 1.01, dist: 34 });
+      const out = CF.ease.inCubic(CF.clamp((t - 3.5) / .4));
+      card.style.opacity = (st.opacity * (1 - out)).toFixed(3);
+      card.style.transform = `translateY(${((1 - CF.ease.outCubic(CF.clamp((t - .15 - i * .09) / .45))) * 34 - out * 24).toFixed(1)}px) scale(${st.scale.toFixed(4)})`;
+    });
+  }
+  window.__seek = async (t) => { render(CF.clamp(t, 0, DUR)); return true; };
+  window.render = (t) => render(CF.clamp(t, 0, DUR));
+  window.__motion = () => 40;
+  window.__ready = Promise.resolve().then(() => { render(0); document.documentElement.dataset.ready = '1'; return true; });
+  const q = new URLSearchParams(location.search);
+  const external = q.has('external');
+  if (q.has('t')) window.__ready.then(() => render(parseFloat(q.get('t'))));
+  else if (q.has('play') || !external) window.__ready.then(() => {
+    const loop = (ts) => { render((ts / 1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+})();
+</script>
+</body>
+</html>

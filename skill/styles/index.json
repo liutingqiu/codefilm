@@ -1,0 +1,58 @@
+{
+  "paper-ink": {
+    "look": "paper-ink",
+    "scenes": ["title", "cards", "lines", "ledger", "end"],
+    "best_for": "brand films, calm explainers, product stories",
+    "motion": "long ease-out, dead-still holds, cut-the-curve between scenes",
+    "avoid": "neon, glow, fast staccato"
+  },
+  "dark-tech": {
+    "look": "dark-tech",
+    "scenes": ["title", "ledger", "chart", "end"],
+    "best_for": "developer tools, AI products, launch films",
+    "motion": "snaps, camera push, one rationed glow",
+    "avoid": "paper textures, serif display"
+  },
+  "swiss": {
+    "look": "swiss",
+    "scenes": ["title", "lines", "chart", "end"],
+    "best_for": "data stories, editorial explainers, B2B",
+    "motion": "cut-the-curve, precise timing, no bounce",
+    "avoid": "decorative shadows, gradients"
+  },
+  "riso": {
+    "look": "riso",
+    "scenes": ["title", "cards", "chat", "end"],
+    "best_for": "culture, music, indie products, posters",
+    "motion": "printed plate by plate, misregistration",
+    "avoid": "smooth glass, realistic depth"
+  },
+  "pixel": {
+    "look": "pixel",
+    "scenes": ["title", "chat", "ledger", "end"],
+    "best_for": "games, dev tools, playful explainers",
+    "motion": "stepped eases, typing, 8-bit SFX",
+    "avoid": "anti-aliased gradients, slow cinematic moves"
+  },
+  "blueprint": {
+    "look": "blueprint",
+    "scenes": ["title", "lines", "chart", "end"],
+    "best_for": "engineering, architecture, systems diagrams",
+    "motion": "draw-on, dimension lines, measured pacing",
+    "avoid": "organic textures, warm light"
+  },
+  "hand-drawn": {
+    "look": "hand-drawn",
+    "scenes": ["title", "cards", "lines", "end"],
+    "best_for": "education, whiteboard explainers, friendly products",
+    "motion": "draw-on, uneven timing, paper",
+    "avoid": "perfect grids, metallic type"
+  },
+  "vox-collage": {
+    "look": "vox-collage",
+    "scenes": ["title", "cards", "chart", "end"],
+    "best_for": "news explainers, video essays, ads",
+    "motion": "poster assembled, camera drift, torn-paper wipes",
+    "avoid": "flat corporate blue, stock-photo gloss"
+  }
+}

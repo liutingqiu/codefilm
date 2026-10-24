@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Compile Python
+        run: |
+          python -m py_compile skill/scripts/*.py promo/vo.py promo/audio_build.py
+      - name: Motion library tests
+        run: |
+          node skill/tests/test_motion.js
+          node skill/tests/test_library.js
+      - name: Static composition checks
+        run: |
+          python skill/scripts/check.py skill/examples/demo/comp.html
+          python skill/scripts/check.py skill/examples/motion-demo/comp.html
+          python skill/scripts/check.py skill/examples/scene-demo/comp.html
+          python skill/scripts/check.py skill/examples/looks-demo/comp.html
+          python skill/scripts/check.py promo/comp.html

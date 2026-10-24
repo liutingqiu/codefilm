@@ -28,9 +28,9 @@ into a clear plan. The 32-second film is a brand spot made entirely with this re
 | Picture | 1920×1080, 30 fps, 960 frames, deterministic `window.__seek(t)` |
 | Voice | Chinese narration, generated with edge-tts (`zh-CN-XiaoxiaoNeural`) |
 | Music / SFX | synthesized with numpy — pluck, pad, bass, kick, hats, whooshes, clicks, chimes |
-| Render | headless Chrome frame capture → FFmpeg, 83 s on this machine |
-| Audio master | −14 LUFS, −1.2 dBFS true peak |
-| Quality | `verify.py`: rest PASS, audio PASS; cadence WARN (calm brand film) |
+| Render | shutter 180° motion blur, 4 browser workers → FFmpeg, **204 s** (5,037 captures) |
+| Audio master | −14.1 LUFS, −1.2 dBFS true peak |
+| Quality | `verify.py --comp`: rest/audio/carry/framing/curves PASS; cadence WARN (calm brand film); reading WARN (advisory) |
 
 The source is in [`promo/`](promo/), including the composition, narration script, timing,
 audio builder and contact sheet.
@@ -88,22 +88,22 @@ ROUTE → INGEST → ANALYZE → DIRECT → BUILD → VERIFY → RENDER → DELI
 8. **Deliver.** MP4 + editable source + diff/QA evidence + `REVIEW.md` with known differences.
 
 Quality gates: contract, determinism, loop, replication diff, rhythm, carry, curves, framing,
-audio, text readability. In the current P0 engine, `check.py`, `frame_diff.py` and `verify.py`
-automate contract/determinism/loop/diff/rhythm/rest/audio; **carry, curves, framing and reading time
-are review checklists**, not yet automated (P1).
+audio, text readability. `check.py`, `frame_diff.py` and `verify.py` automate 1–5 and 9;
+`probe.py` / `verify.py --comp` automate 6–8 and 10 (reading time is advisory for display type and
+VO subtitles).
 
 ---
 
 ## Status
 
-This repository is the **P0** slice of the plan, plus one finished film:
+This repository is the **P1 engine + P2 audio** slice of the plan, plus one finished film:
 
-- **Done:** ingest, analyze, check, render, frame_diff, verify, compose, install; an 8 s demo, a
-  2.6 s reference replication, and the 32 s 拾光 promo; GitHub Pages landing page prepared.
-- **Not done yet (P1):** a reusable motion library, a scene library, 8 style token sets, shutter
-  motion blur, parallel render workers/resume, and automated carry/curves/framing/reading-time checks.
-- **Not done yet (P2/P3):** TTS/SFX moved into the skill, GEN/EDIT adapters, 8–12 implemented styles,
-  taste memory, DSH plugin manifest, CI/tests.
+- **Done:** ingest, analyze (with optical flow), check, render (shutter/parallel/resume),
+  frame_diff, probe (carry/framing/curves/reading), verify, TTS, audio synth, edit_plan (EDIT),
+  gen_prompts (GEN), compose, taste, install; a motion library (36 moves), scene kit (7 builders),
+  8 looks + 8 style recipes; demos for each; the 32 s 拾光 promo; GitHub Pages landing page prepared.
+- **Not done yet (P3):** provider API calls for GEN/EDIT (the prompt pack and cut manifest are
+  local), DSH marketplace packaging, broader platform QA.
 
 No releases, tags or npm packages have been published. The GitHub Pages homepage is prepared but
 not enabled; it waits for a human review.
@@ -114,14 +114,18 @@ not enabled; it waits for a human review.
 
 ```
 skill/                  the portable agent skill (SKILL.md, scripts, templates, references)
-  scripts/              ingest, analyze, check, render, frame_diff, verify, compose, install
-  examples/             an 8 s original demo and a 2.6 s reference replication
+  scripts/              ingest, analyze, check, render (shutter/parallel), frame_diff, probe,
+                        verify, tts, audio, edit_plan, gen_prompts, taste, compose, install
+  library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks)
+  styles/               8 style recipes (look + scene mix + avoid list)
+  examples/             8 s original, 6 s motion, 9.4 s scene kit, 4 s looks, 2.6 s replication
+  tests/                Node tests for motion/looks/scenes/styles
 promo/                  the 32 s 拾光 brand film
   comp.html             the composition (pure render(t), no external assets)
   vo.py                 Chinese narration via edge-tts
   audio_build.py        numpy BGM + SFX + mix
   vo/                   narration MP3s
-  out/                  final MP4 + contact sheet
+  out/                  final MP4 + contact sheet + render evidence
 docs/00-synthesis.md    the research behind the design (35 repos, 14 reusable mechanisms)
 index.html              the landing page for GitHub Pages (hero video)
 ATTRIBUTIONS.md         every referenced project, its license, and what was borrowed

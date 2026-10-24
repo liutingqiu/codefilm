@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from cf_common import CFError, die, need, read_json, run, write_json  # noqa: E402
+from cf_common import CFError, die, need, probe, read_json, run, write_json  # noqa: E402
 
 CHARS = " .:-=+*#%@"
 
@@ -123,13 +123,47 @@ def palette(frames: list[bytes], merge: float = 26.0, min_share: float = 0.004, 
     return out[:top]
 
 
-def flow(video: Path) -> dict | None:
+def flow(video: Path, sample_fps: float = 10.0, width: int = 320) -> dict | None:
+    """Optional optical-flow fingerprint: peak/mean px per sampled frame, fast share."""
     try:
-        import cv2  # noqa
-        import numpy as np  # noqa
+        import cv2
+        import numpy as np
     except Exception:
         return None
-    return None  # P0 keeps flow optional; opencv path lands in P1
+    try:
+        info = probe(video)
+        h = max(2, int(round(width * info["height"] / max(1, info["width"]) / 2) * 2))
+        r = run(["ffmpeg", "-v", "error", "-i", str(video), "-vf",
+                 f"fps={sample_fps},scale={width}:{h},format=gray",
+                 "-f", "rawvideo", "-"], text=False)
+        frames = np.frombuffer(r.stdout or b"", np.uint8)
+        n = width * h
+        if len(frames) < n * 3:
+            return None
+        frames = frames[: (len(frames) // n) * n].reshape(-1, h, width)
+        dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
+        speeds = []
+        for i in range(1, len(frames)):
+            f = dis.calc(frames[i - 1], frames[i], None)
+            mag = np.hypot(f[..., 0], f[..., 1])
+            moving = mag > 0.5
+            if moving.mean() < 0.002:
+                speeds.append(0.0)
+                continue
+            gx = cv2.Sobel(frames[i], cv2.CV_32F, 1, 0, ksize=3)
+            gy = cv2.Sobel(frames[i], cv2.CV_32F, 0, 1, ksize=3)
+            edges = moving & (np.hypot(gx, gy) > 20)
+            v = float(np.median(mag[edges] if edges.sum() > 20 else mag[moving]))
+            speeds.append(v * (1920.0 / width) * (sample_fps / 30.0))
+        if not speeds:
+            return None
+        arr = np.asarray(speeds)
+        return {"sample_fps": sample_fps, "peak": round(float(arr.max()), 1),
+                "mean": round(float(arr.mean()), 1),
+                "fast_share": round(float((arr > 24).mean()), 3)}
+    except Exception as e:
+        print(f"codefilm: flow skipped ({e})", file=sys.stderr)
+        return None
 
 
 def main():
@@ -167,6 +201,10 @@ def main():
     print(f"still {s['still_ratio']}  low {s['low_ratio']}  quiet {s['longest_quiet_s']}s  "
           f"cuts {len(s['cuts'])}  bursts {len(s['bursts'])}")
     print("palette " + "  ".join(f"{c['hex']} {c['share'] * 100:.0f}%" for c in pal))
+    if fl:
+        print(f"motion  peak {fl['peak']} px/frame · mean {fl['mean']} · fast {fl['fast_share'] * 100:.0f}%")
+    elif a.flow:
+        print("motion  skipped (opencv-python not installed)")
     print(f"\nwrote {proj / 'analysis.json'} and {proj / 'energy.txt'}")
 
 

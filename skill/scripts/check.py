@@ -138,18 +138,20 @@ def main():
     ap.add_argument("--fps", type=float, default=30)
     ap.add_argument("--seam", type=float, default=1.0)
     ap.add_argument("--seam-step", type=float, default=8.0)
+    ap.add_argument("--root", default=None, help="folder to serve (default: the page's folder)")
     ap.add_argument("--json", default=None, help="write results to this JSON file")
     a = ap.parse_args()
     path = Path(a.html).resolve()
     if not path.exists():
         die(f"missing {path}")
+    root = Path(a.root).resolve() if a.root else path.parent
     err, warn = static_check(path, a.allow_raster)
     stats = {}
     if a.runtime and not err:
         with playwright()() as p:
             browser = launch(p)
             try:
-                e2, w2, stats = runtime_check(browser, path, path.parent, a.width, a.height,
+                e2, w2, stats = runtime_check(browser, path, root, a.width, a.height,
                                               a.fps, a.seam, a.seam_step)
             finally:
                 browser.close()

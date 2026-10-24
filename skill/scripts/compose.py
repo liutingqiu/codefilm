@@ -64,11 +64,20 @@ def main():
         if not src.exists():
             die(f"shot not found: {src}")
         shot = build / f"shot{i:02d}.mp4"
-        run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-vf",
-             f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
-             f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=black,"
-             f"fps={fps:g},format=yuv420p",
-             "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(shot)])
+        trim_start = float(s.get("trim_start", 0) or 0)
+        trim_end = s.get("trim_end")
+        cmd = ["ffmpeg", "-v", "error", "-y"]
+        if trim_start > 0:
+            cmd += ["-ss", f"{trim_start:.4f}"]
+        cmd += ["-i", str(src)]
+        if trim_end is not None:
+            cmd += ["-t", f"{max(0.0, float(trim_end) - trim_start):.4f}"]
+        cmd += ["-vf",
+                f"scale={width}:{height}:force_original_aspect_ratio=decrease,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:color=black,"
+                f"fps={fps:g},format=yuv420p",
+                "-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", str(shot)]
+        run(cmd, cwd=build)
         paths.append(shot)
     (build / "shots.txt").write_text("".join(f"file '{p.name}'\n" for p in paths), encoding="utf-8")
 

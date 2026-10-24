@@ -488,3 +488,27 @@ codefilm/
 自动镜头卡标注、HyperFrames/Remotion 可选后端。
 
 完整设计、路由、质量门和“精华 → 落点”映射见本文件第 3–8 节。
+
+---
+
+## 13. P1 + P2 已落地（2026-10-24）
+
+| 能力 | 落点 | 实测 |
+|---|---|---|
+| 动效库（36 个纯函数） | `library/motion.js` | `tests/test_motion.js` 12 组通过 |
+| 场景库（7 个 builder） | `library/scenes.js` | `examples/scene-demo` 9.4s 渲染通过；场景门修复了标签泄漏 |
+| 8 套 look | `library/looks.js` | `examples/looks-demo` 8 卡画廊 |
+| 8 套风格配方 | `styles/index.json` | look + 场景组合 + 避坑 |
+| 快门运动模糊 | `render.py --shutter` | 180° / 4 worker / 960 帧 / 204s / 5,037 captures |
+| 并行 + resume | `render.py --workers --resume` | 缺失帧续渲通过 |
+| carry/framing/curves/reading | `scripts/probe.py` + `verify.py --comp` | promo: carry 1.0、framing PASS、curves PASS |
+| 光流 | `analyze.py --flow` | think-big: peak 75.3 px/frame, fast 33% |
+| TTS | `scripts/tts.py` | 中文 edge-tts 两行测试通过 |
+| 音频合成/混音 | `scripts/audio.py` | BGM+SFX+VO，ducking，峰值归一 |
+| EDIT 路线 | `scripts/edit_plan.py` + `compose.py` trim | 4s 两段剪辑测试通过 |
+| GEN 路线 | `scripts/gen_prompts.py` | 分镜 JSON → Seedance/generic prompt pack |
+| taste | `scripts/taste.py` | add/list 通过 |
+| 安装 | `install.py --target claude/agents/dsh` | 含 library/styles/tests |
+| CI | `.github/workflows/ci.yml` | compile + node tests + static checks |
+
+仍未做：真实 GEN/EDIT provider API 调用、DSH 市场打包、平台级 QA、更多完整风格样例。

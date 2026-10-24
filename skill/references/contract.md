@@ -7,8 +7,19 @@ window.__meta = {dur, fps, w, h};        // required
 window.__seek = async (t) => { ... };    // required (or anim.seek / render)
 window.__ready = Promise.resolve(true);  // required (or <html data-ready="1">)
 window.__motion = (t0, t1) => px;        // optional
-window.TEXTS = (t) => [{id, text, x0, y0, x1, y1}]; // optional
+window.TEXTS = (t) => [{id, text, size, x0, y0, x1, y1}]; // optional
 ```
+
+Optional declarations for composition-level checks (`probe.py`, `verify.py --comp`):
+
+```js
+window.__meta.carry = [{t: 3.5, id: '#dot'}, ...];       // same carrier visible across a cut
+window.__meta.inFrame = {'#title': [0, 1.4, 'whole'],    // [t0, t1, 'whole'] = fully inside
+                         '#end':   [5.0, 6.0]};
+```
+
+`TEXTS(t)` should report only text currently visible (opacity/display), with its box in CSS pixels.
+`size` is optional; reading-time is advisory for large display type and VO subtitles.
 
 Accepted alternatives:
 - `window.anim = {duration, seek(t), play, pause}` (motion2code)

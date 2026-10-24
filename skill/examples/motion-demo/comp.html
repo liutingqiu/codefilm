@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<link rel="icon" href="data:,">
+<title>codefilm · motion library demo</title>
+<style>
+  :root{--paper:#F2ECE1;--ink:#1B1A17;--muted:#8A8275;--accent:#D9552B;--green:#2F7D5B;--line:#D8CFC0;--card:#FFFDF8}
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:var(--paper);color:var(--ink);
+    font-family:"Segoe UI",system-ui,sans-serif}
+  #stage{position:absolute;inset:0;overflow:hidden;background:var(--paper)}
+  #camera{position:absolute;inset:0;transform-origin:50% 50%}
+  #grain{position:absolute;inset:0;opacity:.03;pointer-events:none;
+    background-image:radial-gradient(#000 1px,transparent 1px);background-size:4px 4px}
+  #title{position:absolute;left:0;width:100%;top:250px;text-align:center;font-family:Georgia,serif;
+    font-weight:700;font-size:190px;letter-spacing:-.04em;line-height:1;white-space:nowrap}
+  .char{display:inline-block;will-change:transform,opacity,filter}
+  #sub{position:absolute;left:0;width:100%;top:470px;text-align:center;font-size:30px;
+    letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+  #card{position:absolute;left:660px;top:600px;width:600px;height:220px;background:var(--card);
+    border:2px solid var(--ink);box-shadow:12px 12px 0 rgba(27,26,23,.13);padding:30px 34px;
+    transform-origin:50% 50%;will-change:transform,opacity}
+  #card .lab{font-size:18px;letter-spacing:.16em;color:var(--muted);text-transform:uppercase}
+  #count{font-family:Georgia,serif;font-size:74px;letter-spacing:-.04em;line-height:1;margin-top:8px}
+  #bar{position:absolute;left:34px;right:34px;bottom:30px;height:12px;border:1px solid var(--ink);padding:1px}
+  #bar i{display:block;width:100%;height:100%;background:var(--accent);transform-origin:0 50%;transform:scaleX(0)}
+  #btn{position:absolute;right:34px;top:34px;padding:12px 20px;background:var(--accent);color:#fff;
+    font-size:18px;font-weight:700;letter-spacing:.08em;border:1px solid var(--ink);transform-origin:50% 50%}
+  #a,#b{position:absolute;left:0;width:100%;top:320px;text-align:center;font-family:Georgia,serif;
+    font-weight:700;font-size:250px;letter-spacing:-.05em;line-height:1;white-space:nowrap;will-change:transform,opacity,filter}
+  #a{color:var(--ink)}
+  #b{color:var(--accent)}
+  #dot{position:absolute;left:930px;top:500px;width:60px;height:60px;border-radius:50%;background:var(--accent);
+    transform-origin:50% 50%;will-change:transform,opacity}
+  #end{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:24px;background:var(--ink);color:var(--paper);opacity:0;will-change:opacity,transform}
+  #end b{font-family:Georgia,serif;font-size:260px;line-height:1;letter-spacing:-.06em}
+  #end span{font-size:26px;letter-spacing:.24em;color:#C9C1B3;text-transform:uppercase}
+  #end i{width:14px;height:14px;border-radius:50%;background:var(--accent);display:block}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="grain"></div>
+  <div id="camera">
+    <div id="title" data-text="MOTION">MOTION</div>
+    <div id="sub" data-text="a pure function of time">a pure function of time</div>
+    <div id="card">
+      <div class="lab" data-text="frames rendered">frames rendered</div>
+      <div id="count">0</div>
+      <div id="bar"><i id="fill"></i></div>
+      <div id="btn">RENDER</div>
+    </div>
+    <div id="a" data-text="CUT">CUT</div>
+    <div id="b" data-text="CURVE">CURVE</div>
+    <div id="dot"></div>
+    <div id="end"><i></i><b>CF</b><span data-text="codefilm · motion">codefilm · motion</span></div>
+  </div>
+</div>
+<script src="../../library/motion.js"></script>
+<script>
+(() => {
+  const DUR = 6.0;
+  window.__meta = {dur: DUR, fps: 30, w: 1920, h: 1080, loop: false,
+    carry: [{t: 3.5, id: '#dot'}],
+    inFrame: {'#title': [0, 1.4, 'whole'], '#end': [5.0, 6.0]}};
+  const $ = id => document.getElementById(id);
+  const titleChars = CF.splitChars($('title'));
+  const cam = $('camera');
+
+  function render(t) {
+    // 0.0–1.4: letter drop + subtitle rise
+    titleChars.forEach((el, i) => CF.letterDrop(titleChars, t, 0.05, i, {stagger: .07, dur: .5, dist: 70}));
+    const titleOut = CF.ease.inCubic(CF.clamp((t - 1.25) / .3));
+    $('title').style.opacity = (1 - titleOut).toFixed(3);
+    $('title').style.transform = `translateY(${(-titleOut * 50).toFixed(1)}px)`;
+    CF.rise($('sub'), t, .45, {dist: 30, dur: .5});
+    $('sub').style.opacity = (CF.ease.outCubic(CF.clamp((t - .45) / .5)) * (1 - titleOut)).toFixed(3);
+
+    // 1.4–2.8: card pop, counter, button press
+    const cardIn = CF.popIn($('card'), t, 1.4, {s0: .9, over: 1.015, dist: 40});
+    const cardOut = CF.ease.inCubic(CF.clamp((t - 2.65) / .3));
+    $('card').style.opacity = (cardIn.opacity * (1 - cardOut)).toFixed(3);
+    const n = Math.round(CF.counter(t, 1.6, 1.0, 0, 100));
+    $('count').textContent = String(n);
+    $('fill').style.transform = `scaleX(${(n / 100).toFixed(4)})`;
+    const press = CF.press(t, 2.2, {depth: .10, flash: .3});
+    $('btn').style.transform = `scale(${(1 - press.sq).toFixed(3)})`;
+    $('btn').style.background = press.active ? 'var(--green)' : 'var(--accent)';
+
+    // 2.8–4.2: zoom-through swap + a carrier dot crossing a cut
+    const swapIn = t >= 2.8 ? 1 : 0;
+    const zIn = CF.zoomThrough(t, 3.5, {dur: .45, blur: 10});
+    const zOut = CF.ease.inCubic(CF.clamp((t - 4.05) / .25));
+    const showA = t < 3.5;
+    $('a').style.opacity = showA ? (zIn.opacity * (1 - zOut) * swapIn).toFixed(3) : '0';
+    $('a').style.transform = `scale(${zIn.scale.toFixed(4)})`;
+    $('a').style.filter = zIn.blur > .05 ? `blur(${zIn.blur.toFixed(2)}px)` : 'none';
+    $('b').style.opacity = (!showA ? (zIn.opacity * (1 - zOut) * swapIn) : 0).toFixed(3);
+    $('b').style.transform = `scale(${zIn.scale.toFixed(4)})`;
+    $('b').style.filter = zIn.blur > .05 ? `blur(${zIn.blur.toFixed(2)}px)` : 'none';
+    const carry = CF.cutTheCurve(t, 3.5, 'left', {dur: .32, travel: 300, fade: .24});
+    CF.place($('dot'), {x: carry.x, y: carry.y, scale: 1, rot: 0,
+                        opacity: carry.opacity * swapIn, blur: carry.blur});
+
+    // 4.2–6.0: camera push + impact + end card
+    const c = CF.camera(t, [
+      {t: 4.2, x: 0, y: 0, scale: 1},
+      {t: 5.0, x: 0, y: 0, scale: 1.12, ease: 'outCubic'},
+      {t: 6.0, x: 0, y: 0, scale: 1.12}
+    ]);
+    const sh = CF.shake(t, 5.0, {amp: 11, dur: .4});
+    cam.style.transform = `translate(${sh.x.toFixed(2)}px,${sh.y.toFixed(2)}px) scale(${c.scale.toFixed(4)})`;
+    const endIn = CF.ease.outCubic(CF.clamp((t - 4.55) / .4));
+    $('end').style.opacity = endIn.toFixed(3);
+    $('end').style.transform = `scale(${(0.98 + .02 * endIn).toFixed(3)})`;
+  }
+
+  window.__seek = async (t) => { render(CF.clamp(t, 0, DUR)); return true; };
+  window.render = (t) => render(CF.clamp(t, 0, DUR));
+  window.__motion = (t0, t1) => (t0 > 3.3 && t0 < 3.7) || (t0 > 4.8 && t0 < 5.1) ? 160 : 20;
+  window.__ready = Promise.resolve().then(() => { render(0); document.documentElement.dataset.ready = '1'; return true; });
+  const q = new URLSearchParams(location.search);
+  const external = q.has('external');
+  if (q.has('t')) window.__ready.then(() => render(parseFloat(q.get('t'))));
+  else if (q.has('play') || !external) window.__ready.then(() => {
+    const loop = (ts) => { render((ts / 1000) % DUR); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  });
+})();
+</script>
+</body>
+</html>

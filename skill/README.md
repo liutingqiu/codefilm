@@ -32,41 +32,51 @@ python scripts/analyze.py work/myfilm
 Then write `STYLE.md`, `SPEC.md`, `beats.json`, copy `templates/comp.html`, implement
 `window.__seek(t)`, and run check → render → frame_diff.
 
-## Status (P0, 2026-10-23)
+## Status (P1 + P2 audio, 2026-10-24)
 
 Working and tested on this machine:
 
 | Piece | Status |
 |---|---|
 | `ingest.py` | local file + yt-dlp; frames, scene cuts, contact sheet, audio, optional ASR (faster-whisper) |
-| `analyze.py` | energy map, still/low ratios, cuts, bursts, longest quiet, palette |
+| `analyze.py` | energy map, still/low ratios, cuts, bursts, longest quiet, palette; optional optical flow |
 | `check.py` | static + runtime contract, deterministic seek, loop seam (when declared), console/network |
-| `render.py` | Playwright frame capture, 1920×1080, ffmpeg encode, `render.json` |
+| `render.py` | Playwright capture; **shutter blur, parallel workers, resume**; ffmpeg encode, `render.json` |
 | `frame_diff.py` | side-by-side pairs, mean-abs-diff, worst-5, sheet |
-| `verify.py` | rhythm/rest/burst/audio oracle; exit 1 on a failed leg |
+| `probe.py` | carry / framing / curves / reading at the element level |
+| `verify.py` | rhythm/rest/burst/audio + probe legs; exit 1 on a failed leg |
+| `tts.py` | edge-tts narration, per-line timings, `vo.json` |
+| `audio.py` | numpy BGM + SFX + VO mix, ducking, `mix.wav` |
+| `taste.py` | persist user corrections as rules |
 | `compose.py` | manifest → film; shots, voice delays, SRT burn, adaptive subtitle style |
-| `install.py` | copy to `~/.claude/skills/codefilm` or `~/.agents/skills/codefilm` |
-| demo | 8 s, 240 frames, 1920×1080, deterministic (diff 0.00) |
-| think-big example | 2.6 s replication; measured diff 1.5–18 on holds/text, known 51 at the multi-bar wipe |
+| `install.py` | copy to `~/.claude/skills`, `~/.agents/skills`, or `~/.dsh/skills` |
+| `library/motion.js` | 36 deterministic moves: entrances, exits, seams, camera, contact, type |
+| `library/scenes.js` | reusable title/cards/lines/chat/ledger/chart/end builders |
+| `library/looks.js` | 8 look token sets |
+| `tests/test_motion.js` | Node tests for the motion library (12 groups) |
+| demos | 8 s original, 6 s motion library, 9.4 s scene kit, 4 s looks, 2.6 s replication |
 
-Verified: `check.py` PASS; re-render determinism PSNR `inf`; render 240 frames in ~37 s;
-third-party `window.anim` composition rendered by the same engine.
+Verified: `check.py` PASS; re-render determinism PSNR `inf`; 240 frames in ~37 s; shutter
+180° + 4 workers on 960 frames in ~204 s; `verify.py --comp` PASS on the promo (carry 1.0,
+framing PASS, curves PASS with shutter).
 
-Not in P0: motion blur, optical flow, TTS/SFX synthesis, style library, GEN/AVATAR providers,
-auto-annotation of shot cards. These are P1/P2 (see the project's
-[`docs/00-synthesis.md`](../docs/00-synthesis.md), or the
-[GitHub copy](https://github.com/liutingqiu/codefilm/blob/main/docs/00-synthesis.md)).
+Not yet (P3): GEN/EDIT provider adapters beyond the prompt pack, 8–12 full style recipes,
+DSH marketplace packaging. CI lives in the project repo (`.github/workflows/ci.yml`).
+See the project's [`docs/00-synthesis.md`](../docs/00-synthesis.md).
 
 ## Requirements
 
 - `ffmpeg` (required). `ffprobe` optional — the probe falls back to `ffmpeg -i`.
-- `playwright` for rendering: `pip install playwright` (uses installed Chrome first).
-- Python 3.9+; stdlib only for ingest/analyze/compose.
+- `playwright` for rendering / probe: `pip install playwright` (uses installed Chrome first).
+- `numpy` + `Pillow` for shutter blur and `audio.py`.
+- `edge-tts` for `tts.py` (`pip install edge-tts`).
+- `opencv-python` optional for optical flow.
+- Python 3.9+; ingest/analyze/compose/verify are stdlib-only.
 
 ## Install
 
 ```bash
-python scripts/install.py --target claude   # or --target agents, or --dest <dir>
+python scripts/install.py --target claude   # or agents / dsh / --dest <dir>
 ```
 
 ## Layout
@@ -74,11 +84,18 @@ python scripts/install.py --target claude   # or --target agents, or --dest <dir
 ```
 SKILL.md              entry: routing, 8-step loop, hard rules
 AGENTS.md             short cross-agent entry
-scripts/              ingest, analyze, check, render, frame_diff, compose, install
+scripts/              ingest, analyze, check, render, frame_diff, probe, verify,
+                      tts, audio, taste, compose, gen_prompts, install
+library/              motion.js (36 moves), scenes.js (7 builders), looks.js (8 looks)
+styles/index.json     8 style recipes (look + scene mix + avoid list)
 templates/comp.html   demo composition to copy
-references/           route, contract, analyze, verify, styles, credits
+references/           route, contract, analyze, verify, styles, motion-library, scenes, audio, dsh
 examples/demo/        8-second original demo + REVIEW.md
+examples/motion-demo/ 6-second motion library demo
+examples/scene-demo/  9.4-second scene kit demo
+examples/looks-demo/  4-second 8-look gallery
 examples/think-big/   2.6-second replication of a motion2code gallery clip + measured diff
+tests/                Node tests for motion/looks/scenes
 ```
 
 ## License / credits

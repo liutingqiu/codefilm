@@ -1,0 +1,21 @@
+{
+ "comp": "D:\\mine\\video-skills-lab\\codefilm\\examples\\motion-demo\\comp.html",
+ "out": "D:\\mine\\video-skills-lab\\codefilm\\examples\\motion-demo\\out-blur.mp4",
+ "fps": 30.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "scale": 1.0,
+ "frames": 180,
+ "duration": 6.0,
+ "seconds": 47.5,
+ "audio": null,
+ "workers": 4,
+ "shutter": 180.0,
+ "samples": "adaptive",
+ "captures": 1203,
+ "still_frames": 56,
+ "cut_frames": 25,
+ "errors": []
+}

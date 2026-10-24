@@ -1,0 +1,21 @@
+{
+ "comp": "D:\\mine\\video-skills-lab\\promo-shiguang\\comp.html",
+ "out": "D:/mine/video-skills-lab/promo-shiguang/out/shiguang-promo.mp4",
+ "fps": 30.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "scale": 1.0,
+ "frames": 960,
+ "duration": 32.0,
+ "seconds": 204.0,
+ "audio": null,
+ "workers": 4,
+ "shutter": 180.0,
+ "samples": "adaptive",
+ "captures": 5037,
+ "still_frames": 380,
+ "cut_frames": 122,
+ "errors": []
+}

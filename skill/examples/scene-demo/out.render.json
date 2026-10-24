@@ -1,0 +1,15 @@
+{
+ "comp": "D:\\mine\\video-skills-lab\\codefilm\\examples\\scene-demo\\comp.html",
+ "out": "D:\\mine\\video-skills-lab\\codefilm\\examples\\scene-demo\\out.mp4",
+ "fps": 30.0,
+ "size": [
+  1920,
+  1080
+ ],
+ "scale": 1.0,
+ "frames": 282,
+ "duration": 9.4,
+ "seconds": 20.7,
+ "audio": null,
+ "errors": []
+}

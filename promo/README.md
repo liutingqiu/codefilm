@@ -14,12 +14,12 @@
 |---|---|
 | 时长 | 32.00 s |
 | 帧数 | 960（30 fps） |
-| 画面 | 1920×1080，单文件 `comp.html` |
+| 画面 | 1920×1080，单文件 `comp.html`；快门 180° 运动模糊 |
 | 配音 | `zh-CN-XiaoxiaoNeural`，8 句，25.8 s |
 | 音乐 | 92 BPM，Cmaj7 / Am7 / Fmaj7 / G7，numpy 合成 |
 | 音效 | whoosh / tick / click / pop / thud / chime，全部合成 |
 | 母版 | −14 LUFS，−1.2 dBFS true peak，AAC 192 kbps |
-| 渲染 | 960 帧约 83 s（单进程 headless Chrome） |
+| 渲染 | 960 帧，快门 180°，4 worker，约 204 s（5,037 次截帧） |
 
 ## 时间线
 
@@ -61,8 +61,9 @@ python audio_build.py
 # 3. 契约检查
 python ../skill/scripts/check.py comp.html --runtime
 
-# 4. 渲染 960 帧
-python ../skill/scripts/render.py comp.html -o out/video.mp4 --fps 30
+# 4. 渲染 960 帧（快门 180°，4 worker）
+python ../skill/scripts/render.py comp.html -o out/video.mp4 --fps 30 \
+  --shutter 180 --samples 4 --samples-min 4 --samples-max 12 --gap 24 --workers 4
 
 # 5. 混音 + 响度
 ffmpeg -v error -y -i out/video.mp4 -i audio/mix.wav -c:v copy \
@@ -72,8 +73,8 @@ ffmpeg -v error -y -i out/mux.mp4 -c:v copy \
   -movflags +faststart out/shiguang-promo.mp4
 
 # 6. 验收
-python ../skill/scripts/verify.py out/shiguang-promo.mp4 \
-  --shots 0,3.6,7.8,11.4,16.7,21.5,24.5,27.6
+python ../skill/scripts/verify.py out/shiguang-promo.mp4 --comp comp.html \
+  --shots 0,3.6,7.8,11.4,16.7,21.5,24.5,27.6 --shutter 180
 ```
 
 ## 备注

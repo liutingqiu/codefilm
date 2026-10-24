@@ -13,11 +13,16 @@ skill/out/
 skill/diff/
 promo/audio/
 promo/out/video.mp4
+promo/out/video-blur.mp4
 promo/out/mux.mp4
+promo/out/mux-blur.mp4
+promo/out/shiguang-promo-blur.mp4
 promo/out/t*.png
 promo/out/f*.png
 promo/out/still_*.png
 promo/out/around*.png
+promo/out/old-*.png
+promo/out/new-*.png
 
 # OS / editor
 .DS_Store
